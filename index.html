@@ -227,27 +227,62 @@ const DEF=[["MARCA BASIC TEE",450,""],["CORE HOODIE",950,""],["LIMITED TEE",0,""
 const COLORS=["Чёрный","Белый","Серый","Бежевый","Синий","Красный","Зелёный"];
 const SIZES=["XS","S","M","L","XL","XXL"];
 let products=DEF.slice(),cart=[],isAdmin=false,newImg="",holdT=null;
-try{const r=localStorage.getItem('marca_products');if(r){const p=JSON.parse(r);if(Array.isArray(p)){const f=p.filter(x=>Array.isArray(x)&&x.length>=2).map(x=>[String(x[0]||""),Number(x[1])||0,String(x[2]||"")]);if(f.length)products=f;}}}catch(e){localStorage.removeItem('marca_products');}
+
+/* Загрузка каталога с приведением цен к числу */
+try{
+  const r=localStorage.getItem('marca_products');
+  if(r){
+    const p=JSON.parse(r);
+    if(Array.isArray(p)){
+      const f=p.filter(x=>Array.isArray(x)&&x.length>=2)
+        .map(x=>[String(x[0]||""),Number(x[1])||0,String(x[2]||"")]);
+      if(f.length)products=f;
+    }
+  }
+}catch(e){localStorage.removeItem('marca_products');}
+
 const $=id=>document.getElementById(id);
-const price=p=>p[1]==0?"ПОД ЗАКАЗ":p[1]+" лей";
+const price=p=>Number(p[1])===0?"ПОД ЗАКАЗ":p[1]+" лей";
 const save=()=>{try{localStorage.setItem('marca_products',JSON.stringify(products));return true}catch(e){alert("Хранилище переполнено!");return false}};
-const cartSum=()=>cart.reduce((s,item)=>s+(item[1]>0?item[1]:0),0);
+
+/* Сумма корзины — все товары с ценой больше 0 */
+const cartSum=()=>cart.reduce((s,item)=>{
+  const p=Number(item.price)||0;
+  return s+(p>0?p:0);
+},0);
+
 function render(){
   $("products").innerHTML=products.length?products.map((p,i)=>{
     const ph=p[2]?`<img src="${p[2]}">`:`<div class="fake"></div>`;
     return `<div class="product"><div class="photo">${ph}</div><div class="info"><b>${p[0]}</b><br><small>MARCA.STORRE</small><div class="row"><b>${price(p)}</b><button class="add" onclick="add(${i})">В КОРЗИНУ</button></div></div></div>`;
   }).join(""):'<div class="empty" style="grid-column:1/-1">Пусто</div>';
 }
-function add(i){cart.push({name:products[i][0],price:products[i][1],img:products[i][2],color:"",size:""});updateCartBadge();openCart();}
+
+/* Добавление товара в корзину (с явным Number для цены) */
+function add(i){
+  const priceNum=Number(products[i][1])||0;
+  cart.push({
+    name:String(products[i][0]),
+    price:priceNum,
+    img:products[i][2],
+    color:"",
+    size:""
+  });
+  updateCartBadge();
+  openCart();
+}
+
 function updateCartBadge(){$("num").textContent=cart.length;}
 function openCart(){$("cartBox").style.display="flex";renderCart();}
+
 function renderCart(){
   const items=$("items");
   if(!cart.length){items.innerHTML='<div class="empty">Корзина пустая</div>';}
   else{
     items.innerHTML=cart.map((item,idx)=>{
       const img=item.img?`<img src="${item.img}">`:'🖼';
-      const p=item.price==0?"ПОД ЗАКАЗ":item.price+" лей";
+      const pNum=Number(item.price)||0;
+      const p=pNum===0?"ПОД ЗАКАЗ":pNum+" лей";
       const colorOpts='<option value="">Цвет</option>'+COLORS.map(c=>`<option ${item.color===c?'selected':''}>${c}</option>`).join("");
       const sizeOpts='<option value="">Размер</option>'+SIZES.map(s=>`<option ${item.size===s?'selected':''}>${s}</option>`).join("");
       return `<div class="cart-item"><div class="ci-img">${img}</div><div class="ci-info"><b>${item.name}</b><small>${p}</small><div class="ci-controls"><select onchange="setColor(${idx},this.value)">${colorOpts}</select><select onchange="setSize(${idx},this.value)">${sizeOpts}</select></div></div><button class="ci-del" onclick="removeFromCart(${idx})">✕</button></div>`;
@@ -256,22 +291,26 @@ function renderCart(){
   $("sum").textContent=cartSum();
   updateCartBadge();
 }
+
 function setColor(idx,val){cart[idx].color=val;}
 function setSize(idx,val){cart[idx].size=val;}
 function removeFromCart(idx){cart.splice(idx,1);renderCart();}
 function closeCart(){$("cartBox").style.display="none";}
+
 function sendTelegram(){
   if(!cart.length){alert("Корзина пустая");return;}
   const missing=cart.findIndex(x=>!x.color||!x.size);
   if(missing!==-1){alert(`Укажите цвет и размер для товара:\n"${cart[missing].name}"`);return;}
   const list=cart.map(x=>{
-    const p=x.price==0?"ПОД ЗАКАЗ":x.price+" лей";
+    const pNum=Number(x.price)||0;
+    const p=pNum===0?"ПОД ЗАКАЗ":pNum+" лей";
     return `• ${x.name} — ${p}\n\n🎨 Цвет: ${x.color}\n📏 Размер: ${x.size}`;
   }).join("\n\n");
   const total=cartSum();
-  const text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n💰 СУММА: ${total==0?"ПОД ЗАКАЗ":total+" лей"}`;
+  const text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n💰 СУММА: ${total===0?"ПОД ЗАКАЗ":total+" лей"}`;
   location.href="https://t.me/"+MGR+"?text="+encodeURIComponent(text);
 }
+
 const logoEl=$("logo");
 function startHold(){logoEl.classList.add('holding');holdT=setTimeout(()=>{logoEl.classList.remove('holding');if(navigator.vibrate)navigator.vibrate(30);openLogin();},HOLD);}
 function cancelHold(){if(holdT){clearTimeout(holdT);holdT=null;}logoEl.classList.remove('holding');}
@@ -283,6 +322,7 @@ logoEl.addEventListener('touchend',cancelHold);
 logoEl.addEventListener('touchcancel',cancelHold);
 logoEl.addEventListener('touchmove',cancelHold);
 logoEl.addEventListener('click',e=>e.preventDefault());
+
 function openLogin(){$("loginBox").style.display="flex";$("adminBox").style.display="none";$("loginError").textContent="";$("passInput").value="";setTimeout(()=>$("passInput").focus(),150);}
 function closeLogin(){$("loginBox").style.display="none";$("passInput").value="";}
 function tryLogin(){
@@ -291,8 +331,10 @@ function tryLogin(){
   else{$("loginError").textContent="Неверный пароль";$("passInput").value="";$("passInput").focus();}
 }
 $("passInput").addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();tryLogin();}});
+
 function openAdmin(){if(!isAdmin){openLogin();return;}$("loginBox").style.display="none";$("adminBox").style.display="flex";renderAdmin();}
 function closeAdmin(){$("adminBox").style.display="none";isAdmin=false;}
+
 function renderAdmin(){
   const b=$("adminList");
   b.innerHTML=products.length?products.map((p,i)=>{
@@ -300,6 +342,7 @@ function renderAdmin(){
     return `<div class="admin-item"><div class="thumb">${t}</div><div class="fields"><input value="${String(p[0]).replace(/"/g,'&quot;')}" onchange="editName(${i},this.value)"><input type="number" min="0" value="${p[1]}" onchange="editPrice(${i},this.value)"></div><div class="actions"><button class="btn-img" onclick="changeImage(${i})">🖼</button><button class="btn-del" onclick="removeProduct(${i})">✕</button></div></div>`;
   }).join(""):'<div class="empty">Пусто</div>';
 }
+
 function compressImage(file,max=700,q=.82){
   return new Promise((res,rej)=>{
     const r=new FileReader();
@@ -307,22 +350,26 @@ function compressImage(file,max=700,q=.82){
     r.onerror=rej;r.readAsDataURL(file);
   });
 }
+
 $("newImgFile").addEventListener('change',async e=>{
   const f=e.target.files[0];if(!f)return;
   try{newImg=await compressImage(f);$("newImgPreview").innerHTML=`<img src="${newImg}">`;$("newImgUrl").value="";}
   catch{alert("Ошибка картинки");}
 });
+
 $("newImgUrl").addEventListener('input',e=>{
   const u=e.target.value.trim();
   if(u){newImg="";$("newImgPreview").innerHTML=`<img src="${u}">`;}
   else $("newImgPreview").innerHTML='🖼';
 });
+
 function changeImage(i){
   if(!isAdmin)return;
   const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
   inp.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{products[i][2]=await compressImage(f);if(save()){render();renderAdmin();}}catch{alert("Ошибка");}};
   inp.click();
 }
+
 function addProduct(){
   if(!isAdmin)return;
   const n=$("newName").value.trim(),pv=$("newPrice").value.trim(),u=$("newImgUrl").value.trim();
@@ -334,9 +381,23 @@ function addProduct(){
   render();renderAdmin();
   $("newName").value="";$("newPrice").value="";$("newImgUrl").value="";$("newImgFile").value="";$("newImgPreview").innerHTML='🖼';newImg="";
 }
+
 function editName(i,v){if(!isAdmin)return;v=v.trim();if(!v){renderAdmin();return;}products[i][0]=v;save();render();}
-function editPrice(i,v){if(!isAdmin)return;const n=parseInt(v);if(isNaN(n)||n<0){renderAdmin();return;}products[i][1]=n;save();render();}
+function editPrice(i,v){
+  if(!isAdmin)return;
+  const n=parseInt(v);
+  if(isNaN(n)||n<0){renderAdmin();return;}
+  products[i][1]=Number(n);
+  save();
+  render();
+  /* Если товар уже в корзине — обновляем цену и там */
+  cart.forEach(item=>{
+    if(item.name===products[i][0]) item.price=Number(n);
+  });
+  if($("cartBox").style.display==="flex") renderCart();
+}
 function removeProduct(i){if(!isAdmin)return;if(!confirm(`Удалить "${products[i][0]}"?`))return;products.splice(i,1);save();render();renderAdmin();}
+
 (function(){
   const cube=document.getElementById('cube3d');
   if(!cube)return;
@@ -352,6 +413,7 @@ function removeProduct(i){if(!isAdmin)return;if(!confirm(`Удалить "${prod
   window.addEventListener('touchmove',e=>move(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
   window.addEventListener('touchend',end);
 })();
+
 render();
 </script>
 </body>
