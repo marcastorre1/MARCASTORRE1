@@ -48,21 +48,25 @@ nav{height:65px;padding:0 6%;display:flex;align-items:center;justify-content:spa
 .feat b{display:block;font-size:14px;margin-bottom:3px}
 .feat small{color:#666;font-size:12px}
 .cube-wrap{display:grid;place-items:center;perspective:1200px;height:420px;position:relative}
-.cube-wrap:before{content:"";position:absolute;width:80%;height:80%;background:radial-gradient(circle,rgba(255,255,255,.07),transparent 65%);filter:blur(70px);pointer-events:none}
+.cube-wrap:before{content:"";position:absolute;width:90%;height:90%;background:radial-gradient(circle,rgba(120,180,255,.15),transparent 60%);filter:blur(80px);pointer-events:none;animation:auraPulse 5s ease-in-out infinite}
+.cube-wrap:after{content:"";position:absolute;width:60%;height:60%;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 65%);filter:blur(60px);pointer-events:none;animation:auraPulse 5s ease-in-out infinite;animation-delay:2s}
 .cube{width:200px;height:200px;position:relative;transform-style:preserve-3d;animation:spinCube 14s linear infinite;cursor:grab}
-.cube .face{position:absolute;width:200px;height:200px;display:grid;place-items:center;background:#f5f5f5;border:1px solid rgba(255,255,255,.2);box-shadow:inset 0 0 40px rgba(0,0,0,.08),0 0 30px rgba(255,255,255,.08);overflow:hidden}
-.cube .face img{width:70%;height:70%;object-fit:contain}
+.cube .face{position:absolute;width:200px;height:200px;display:grid;place-items:center;background:#f5f5f5;border:1.5px solid rgba(255,255,255,.35);box-shadow:inset 0 0 40px rgba(120,180,255,.15),0 0 25px rgba(120,180,255,.35),0 0 60px rgba(120,180,255,.2);overflow:hidden;animation:faceGlow 5s ease-in-out infinite}
+.cube .face img{width:70%;height:70%;object-fit:contain;filter:drop-shadow(0 0 8px rgba(120,180,255,.4))}
 .face.front{transform:translateZ(100px)}
 .face.back{transform:rotateY(180deg) translateZ(100px)}
 .face.right{transform:rotateY(90deg) translateZ(100px)}
 .face.left{transform:rotateY(-90deg) translateZ(100px)}
 .face.top{transform:rotateX(90deg) translateZ(100px)}
 .face.bottom{transform:rotateX(-90deg) translateZ(100px)}
-.cube-shadow{position:absolute;bottom:40px;width:180px;height:30px;background:radial-gradient(ellipse,rgba(255,255,255,.15),transparent 70%);filter:blur(15px);animation:shadowPulse 14s linear infinite;pointer-events:none}
+.cube-shadow{position:absolute;bottom:40px;width:200px;height:40px;background:radial-gradient(ellipse,rgba(120,180,255,.35),transparent 70%);filter:blur(20px);animation:shadowPulse 14s linear infinite;pointer-events:none}
 @keyframes spinCube{0%{transform:rotateX(-15deg) rotateY(0deg)}100%{transform:rotateX(-15deg) rotateY(360deg)}}
-@keyframes shadowPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:.3;transform:scale(.85)}}
+@keyframes shadowPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.3;transform:scale(.85)}}
+@keyframes auraPulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
+@keyframes faceGlow{0%,100%{box-shadow:inset 0 0 40px rgba(120,180,255,.15),0 0 25px rgba(120,180,255,.35),0 0 60px rgba(120,180,255,.2)}50%{box-shadow:inset 0 0 50px rgba(120,180,255,.25),0 0 40px rgba(120,180,255,.5),0 0 90px rgba(120,180,255,.35)}}
 .shop{padding:80px 6%}
 .shop h2{font-size:55px;margin:10px 0 30px}.shop h2 span{color:#444}
+.loading{color:#555;text-align:center;padding:40px;font-size:14px}
 .products{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .product{background:#111;border:1px solid #222;border-radius:10px;overflow:hidden}
 .photo{height:250px;background:radial-gradient(circle,#333,#111);display:grid;place-items:center;overflow:hidden}
@@ -131,7 +135,7 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 .face.left{transform:rotateY(-90deg) translateZ(70px)}
 .face.top{transform:rotateX(90deg) translateZ(70px)}
 .face.bottom{transform:rotateX(-90deg) translateZ(70px)}
-.cube-shadow{bottom:20px;width:120px}
+.cube-shadow{bottom:20px;width:140px;height:30px}
 .feat:hover{transform:none}
 }
 </style>
@@ -185,7 +189,7 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 <section class="shop" id="shop">
 <small style="color:#666">COLLECTION</small>
 <h2>THE <span>DROP.</span></h2>
-<div class="products" id="products"></div>
+<div class="products" id="products"><div class="loading">Загрузка каталога...</div></div>
 </section>
 <div class="modal" id="loginBox"><div class="box login-box">
 <h2>🔐 ВХОД</h2>
@@ -200,7 +204,7 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 <div class="admin-add">
 <div class="fields">
 <input id="newName" placeholder="Название">
-<input id="newPrice" type="number" placeholder="Цена" min="0">
+<input id="newPrice" type="number" placeholder="Цена €" min="0">
 </div>
 <div class="img-zone">
 <div class="img-preview" id="newImgPreview">🖼</div>
@@ -217,57 +221,70 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 <div class="drawer" id="cartBox"><div class="box" style="width:460px">
 <h2>КОРЗИНА</h2>
 <div id="items"></div>
-<h3 style="margin-top:10px">Итого: <span id="sum">0</span> лей</h3>
+<h3 style="margin-top:10px">Итого: <span id="sum">0</span> €</h3>
 <button class="send tg-btn" onclick="sendTelegram()">📲 ОФОРМИТЬ ЗАКАЗ В TELEGRAM</button>
 <button class="close" onclick="closeCart()">ЗАКРЫТЬ</button>
 </div></div>
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCjxHdvYA0U90C46CYX_iU2P60pXS19v0I",
+  authDomain: "marcastorre-31c67.firebaseapp.com",
+  projectId: "marcastorre-31c67",
+  storageBucket: "marcastorre-31c67.firebasestorage.app",
+  messagingSenderId: "950446260867",
+  appId: "1:950446260867:web:7a70574cff5e4edcac11b6"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 const PASS="marca2026",HOLD=1000,MGR="markulik52";
-const DEF=[["MARCA BASIC TEE",450,""],["CORE HOODIE",950,""],["LIMITED TEE",0,""],["STREET JACKET",1400,""]];
 const COLORS=["Чёрный","Белый","Серый","Бежевый","Синий","Красный","Зелёный"];
 const SIZES=["XS","S","M","L","XL","XXL"];
-let products=DEF.slice(),cart=[],isAdmin=false,newImg="",holdT=null;
 
-/* Загрузка каталога с приведением цен к числу */
-try{
-  const r=localStorage.getItem('marca_products');
-  if(r){
-    const p=JSON.parse(r);
-    if(Array.isArray(p)){
-      const f=p.filter(x=>Array.isArray(x)&&x.length>=2)
-        .map(x=>[String(x[0]||""),Number(x[1])||0,String(x[2]||"")]);
-      if(f.length)products=f;
-    }
-  }
-}catch(e){localStorage.removeItem('marca_products');}
-
+let products=[],cart=[],isAdmin=false,newImg="",holdT=null;
 const $=id=>document.getElementById(id);
-const price=p=>Number(p[1])===0?"ПОД ЗАКАЗ":p[1]+" лей";
-const save=()=>{try{localStorage.setItem('marca_products',JSON.stringify(products));return true}catch(e){alert("Хранилище переполнено!");return false}};
+const price=p=>Number(p[1])===0?"ПОД ЗАКАЗ":p[1]+" €";
+const cartSum=()=>cart.reduce((s,item)=>{const p=Number(item.price)||0;return s+(p>0?p:0);},0);
 
-/* Сумма корзины — все товары с ценой больше 0 */
-const cartSum=()=>cart.reduce((s,item)=>{
-  const p=Number(item.price)||0;
-  return s+(p>0?p:0);
-},0);
-
-function render(){
-  $("products").innerHTML=products.length?products.map((p,i)=>{
-    const ph=p[2]?`<img src="${p[2]}">`:`<div class="fake"></div>`;
-    return `<div class="product"><div class="photo">${ph}</div><div class="info"><b>${p[0]}</b><br><small>MARCA.STORRE</small><div class="row"><b>${price(p)}</b><button class="add" onclick="add(${i})">В КОРЗИНУ</button></div></div></div>`;
-  }).join(""):'<div class="empty" style="grid-column:1/-1">Пусто</div>';
+/* ==== FIREBASE: загрузка + real-time ==== */
+async function loadProducts(){
+  try{
+    const snap = await getDocs(collection(db,"products"));
+    products = snap.docs.map(d=>({id:d.id, data:d.data()}));
+    render();
+  }catch(e){
+    console.error("Ошибка загрузки:", e);
+    $("products").innerHTML='<div class="loading">Ошибка загрузки. Обновите страницу.</div>';
+  }
 }
 
-/* Добавление товара в корзину (с явным Number для цены) */
+/* Автообновление — если кто-то добавил товар, все видят */
+onSnapshot(collection(db,"products"), snap=>{
+  products = snap.docs.map(d=>({id:d.id, data:d.data()}));
+  render();
+  if($("adminBox").style.display==="flex") renderAdmin();
+});
+
+/* ==== РЕНДЕР КАТАЛОГА ==== */
+function render(){
+  if(!products.length){
+    $("products").innerHTML='<div class="loading">Каталог пуст</div>';
+    return;
+  }
+  $("products").innerHTML=products.map((p,i)=>{
+    const d=p.data;
+    const ph=d.img?`<img src="${d.img}">`:`<div class="fake"></div>`;
+    const pr=Number(d.price)===0?"ПОД ЗАКАЗ":d.price+" €";
+    return `<div class="product"><div class="photo">${ph}</div><div class="info"><b>${d.name}</b><br><small>MARCA.STORRE</small><div class="row"><b>${pr}</b><button class="add" onclick="add(${i})">В КОРЗИНУ</button></div></div></div>`;
+  }).join("");
+}
+
 function add(i){
-  const priceNum=Number(products[i][1])||0;
-  cart.push({
-    name:String(products[i][0]),
-    price:priceNum,
-    img:products[i][2],
-    color:"",
-    size:""
-  });
+  const d=products[i].data;
+  cart.push({name:d.name,price:Number(d.price)||0,img:d.img,color:"",size:""});
   updateCartBadge();
   openCart();
 }
@@ -282,7 +299,7 @@ function renderCart(){
     items.innerHTML=cart.map((item,idx)=>{
       const img=item.img?`<img src="${item.img}">`:'🖼';
       const pNum=Number(item.price)||0;
-      const p=pNum===0?"ПОД ЗАКАЗ":pNum+" лей";
+      const p=pNum===0?"ПОД ЗАКАЗ":pNum+" €";
       const colorOpts='<option value="">Цвет</option>'+COLORS.map(c=>`<option ${item.color===c?'selected':''}>${c}</option>`).join("");
       const sizeOpts='<option value="">Размер</option>'+SIZES.map(s=>`<option ${item.size===s?'selected':''}>${s}</option>`).join("");
       return `<div class="cart-item"><div class="ci-img">${img}</div><div class="ci-info"><b>${item.name}</b><small>${p}</small><div class="ci-controls"><select onchange="setColor(${idx},this.value)">${colorOpts}</select><select onchange="setSize(${idx},this.value)">${sizeOpts}</select></div></div><button class="ci-del" onclick="removeFromCart(${idx})">✕</button></div>`;
@@ -303,14 +320,15 @@ function sendTelegram(){
   if(missing!==-1){alert(`Укажите цвет и размер для товара:\n"${cart[missing].name}"`);return;}
   const list=cart.map(x=>{
     const pNum=Number(x.price)||0;
-    const p=pNum===0?"ПОД ЗАКАЗ":pNum+" лей";
+    const p=pNum===0?"ПОД ЗАКАЗ":pNum+" €";
     return `• ${x.name} — ${p}\n\n🎨 Цвет: ${x.color}\n📏 Размер: ${x.size}`;
   }).join("\n\n");
   const total=cartSum();
-  const text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n💰 СУММА: ${total===0?"ПОД ЗАКАЗ":total+" лей"}`;
+  const text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n💰 СУММА: ${total===0?"ПОД ЗАКАЗ":total+" €"}`;
   location.href="https://t.me/"+MGR+"?text="+encodeURIComponent(text);
 }
 
+/* ==== УДЕРЖАНИЕ ЛОГО ==== */
 const logoEl=$("logo");
 function startHold(){logoEl.classList.add('holding');holdT=setTimeout(()=>{logoEl.classList.remove('holding');if(navigator.vibrate)navigator.vibrate(30);openLogin();},HOLD);}
 function cancelHold(){if(holdT){clearTimeout(holdT);holdT=null;}logoEl.classList.remove('holding');}
@@ -323,6 +341,7 @@ logoEl.addEventListener('touchcancel',cancelHold);
 logoEl.addEventListener('touchmove',cancelHold);
 logoEl.addEventListener('click',e=>e.preventDefault());
 
+/* ==== ВХОД ==== */
 function openLogin(){$("loginBox").style.display="flex";$("adminBox").style.display="none";$("loginError").textContent="";$("passInput").value="";setTimeout(()=>$("passInput").focus(),150);}
 function closeLogin(){$("loginBox").style.display="none";$("passInput").value="";}
 function tryLogin(){
@@ -332,18 +351,22 @@ function tryLogin(){
 }
 $("passInput").addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();tryLogin();}});
 
+/* ==== АДМИНКА ==== */
 function openAdmin(){if(!isAdmin){openLogin();return;}$("loginBox").style.display="none";$("adminBox").style.display="flex";renderAdmin();}
 function closeAdmin(){$("adminBox").style.display="none";isAdmin=false;}
 
 function renderAdmin(){
   const b=$("adminList");
-  b.innerHTML=products.length?products.map((p,i)=>{
-    const t=p[2]?`<img src="${p[2]}">`:'🖼';
-    return `<div class="admin-item"><div class="thumb">${t}</div><div class="fields"><input value="${String(p[0]).replace(/"/g,'&quot;')}" onchange="editName(${i},this.value)"><input type="number" min="0" value="${p[1]}" onchange="editPrice(${i},this.value)"></div><div class="actions"><button class="btn-img" onclick="changeImage(${i})">🖼</button><button class="btn-del" onclick="removeProduct(${i})">✕</button></div></div>`;
-  }).join(""):'<div class="empty">Пусто</div>';
+  if(!products.length){b.innerHTML='<div class="empty">Пусто</div>';return;}
+  b.innerHTML=products.map((p,i)=>{
+    const d=p.data;
+    const t=d.img?`<img src="${d.img}">`:'🖼';
+    return `<div class="admin-item"><div class="thumb">${t}</div><div class="fields"><input value="${String(d.name).replace(/"/g,'&quot;')}" onchange="editName('${p.id}',this.value)"><input type="number" min="0" value="${d.price}" onchange="editPrice('${p.id}',this.value)"></div><div class="actions"><button class="btn-img" onclick="changeImage('${p.id}')">🖼</button><button class="btn-del" onclick="removeProduct('${p.id}')">✕</button></div></div>`;
+  }).join("");
 }
 
-function compressImage(file,max=700,q=.82){
+/* ==== КАРТИНКИ — сжимаем и храним как base64 в Firestore ==== */
+function compressImage(file,max=600,q=.75){
   return new Promise((res,rej)=>{
     const r=new FileReader();
     r.onload=e=>{const img=new Image();img.onload=()=>{let{width:w,height:h}=img;if(w>h&&w>max){h=Math.round(h*max/w);w=max}else if(h>max){w=Math.round(w*max/h);h=max}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',q))};img.onerror=rej;img.src=e.target.result};
@@ -363,41 +386,52 @@ $("newImgUrl").addEventListener('input',e=>{
   else $("newImgPreview").innerHTML='🖼';
 });
 
-function changeImage(i){
+function changeImage(id){
   if(!isAdmin)return;
   const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
-  inp.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{products[i][2]=await compressImage(f);if(save()){render();renderAdmin();}}catch{alert("Ошибка");}};
+  inp.onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;
+    try{
+      const data=await compressImage(f);
+      await updateDoc(doc(db,"products",id),{img:data});
+    }catch{alert("Ошибка");}
+  };
   inp.click();
 }
 
-function addProduct(){
+/* ==== ДОБАВИТЬ ТОВАР ==== */
+async function addProduct(){
   if(!isAdmin)return;
   const n=$("newName").value.trim(),pv=$("newPrice").value.trim(),u=$("newImgUrl").value.trim();
   if(!n){alert("Введите название");return;}
   const pn=pv===""?0:parseInt(pv);
   if(isNaN(pn)||pn<0){alert("Плохая цена");return;}
-  products.push([n,pn,newImg||u||""]);
-  if(!save()){products.pop();return;}
-  render();renderAdmin();
-  $("newName").value="";$("newPrice").value="";$("newImgUrl").value="";$("newImgFile").value="";$("newImgPreview").innerHTML='🖼';newImg="";
+  try{
+    await addDoc(collection(db,"products"),{name:n,price:pn,img:newImg||u||""});
+    $("newName").value="";$("newPrice").value="";$("newImgUrl").value="";$("newImgFile").value="";$("newImgPreview").innerHTML='🖼';newImg="";
+  }catch(e){alert("Ошибка сохранения: "+e.message);}
 }
 
-function editName(i,v){if(!isAdmin)return;v=v.trim();if(!v){renderAdmin();return;}products[i][0]=v;save();render();}
-function editPrice(i,v){
+/* ==== РЕДАКТИРОВАНИЕ ==== */
+async function editName(id,v){
+  if(!isAdmin)return;
+  v=v.trim();
+  if(!v){renderAdmin();return;}
+  try{await updateDoc(doc(db,"products",id),{name:v});}catch(e){alert("Ошибка");}
+}
+async function editPrice(id,v){
   if(!isAdmin)return;
   const n=parseInt(v);
   if(isNaN(n)||n<0){renderAdmin();return;}
-  products[i][1]=Number(n);
-  save();
-  render();
-  /* Если товар уже в корзине — обновляем цену и там */
-  cart.forEach(item=>{
-    if(item.name===products[i][0]) item.price=Number(n);
-  });
-  if($("cartBox").style.display==="flex") renderCart();
+  try{await updateDoc(doc(db,"products",id),{price:Number(n)});}catch(e){alert("Ошибка");}
 }
-function removeProduct(i){if(!isAdmin)return;if(!confirm(`Удалить "${products[i][0]}"?`))return;products.splice(i,1);save();render();renderAdmin();}
+async function removeProduct(id){
+  if(!isAdmin)return;
+  if(!confirm("Удалить товар?"))return;
+  try{await deleteDoc(doc(db,"products",id));}catch(e){alert("Ошибка");}
+}
 
+/* ==== 3D-КУБ: вращение мышкой ==== */
 (function(){
   const cube=document.getElementById('cube3d');
   if(!cube)return;
@@ -414,7 +448,24 @@ function removeProduct(i){if(!isAdmin)return;if(!confirm(`Удалить "${prod
   window.addEventListener('touchend',end);
 })();
 
-render();
+/* Делаем функции глобальными (для onclick) */
+window.add=add;
+window.openCart=openCart;
+window.closeCart=closeCart;
+window.removeFromCart=removeFromCart;
+window.setColor=setColor;
+window.setSize=setSize;
+window.sendTelegram=sendTelegram;
+window.tryLogin=tryLogin;
+window.closeLogin=closeLogin;
+window.closeAdmin=closeAdmin;
+window.addProduct=addProduct;
+window.editName=editName;
+window.editPrice=editPrice;
+window.removeProduct=removeProduct;
+window.changeImage=changeImage;
+
+loadProducts();
 </script>
 </body>
 </html>
