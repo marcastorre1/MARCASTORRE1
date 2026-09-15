@@ -84,6 +84,7 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 .admin-add{background:#161616;border:1px solid #262626;border-radius:10px;padding:14px;margin-bottom:18px}
 .admin-add .fields{display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:10px}
 .admin-add .fields input{margin:0}
+.admin-add .sizes-input{margin:0 0 10px 0!important;font-size:13px!important}
 .img-zone{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 .img-preview{width:70px;height:70px;border-radius:8px;background:#0d0d0d;border:1px dashed #333;display:grid;place-items:center;overflow:hidden;font-size:22px;color:#444}
 .img-preview img{width:100%;height:100%;object-fit:cover}
@@ -93,11 +94,12 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 .img-url{margin:0!important;font-size:13px;padding:9px!important}
 .add-main-btn{width:100%;background:#fff;color:#000;border:0;padding:12px;border-radius:6px;font-weight:bold}
 .admin-list{max-height:400px;overflow-y:auto;margin-bottom:15px}
-.admin-item{background:#161616;border:1px solid #262626;border-radius:8px;margin-bottom:8px;padding:10px;display:flex;gap:10px;align-items:center}
+.admin-item{background:#161616;border:1px solid #262626;border-radius:8px;margin-bottom:8px;padding:10px;display:flex;gap:10px;align-items:flex-start}
 .admin-item .thumb{width:52px;height:52px;border-radius:6px;flex-shrink:0;background:#0d0d0d;border:1px solid #2a2a2a;display:grid;place-items:center;font-size:18px;color:#444;overflow:hidden}
 .admin-item .thumb img{width:100%;height:100%;object-fit:cover}
-.admin-item .fields{flex:1;display:grid;grid-template-columns:2fr 1fr;gap:6px}
+.admin-item .fields{flex:1;display:flex;flex-direction:column;gap:6px}
 .admin-item .fields input{margin:0;padding:7px;font-size:13px}
+.admin-item .fields .row2{display:grid;grid-template-columns:1fr 1.5fr;gap:6px}
 .admin-item .actions{display:flex;flex-direction:column;gap:4px}
 .admin-item .actions button{border:0;border-radius:5px;padding:6px 9px;font-size:12px}
 .btn-img{background:#1a2a3a;color:#7cf}
@@ -206,6 +208,7 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 <input id="newName" placeholder="Название">
 <input id="newPrice" type="number" placeholder="Цена €" min="0">
 </div>
+<input class="sizes-input" id="newSizes" placeholder="Размеры через запятую (S,M,L или 38,39,40)">
 <div class="img-zone">
 <div class="img-preview" id="newImgPreview">🖼</div>
 <div class="img-controls">
@@ -242,14 +245,12 @@ const db = getFirestore(app);
 
 const PASS="marca2026",HOLD=1000,MGR="markulik52";
 const COLORS=["Чёрный","Белый","Серый","Бежевый","Синий","Красный","Зелёный"];
-const SIZES=["XS","S","M","L","XL","XXL"];
 
 let products=[],cart=[],isAdmin=false,newImg="",holdT=null;
 const $=id=>document.getElementById(id);
-const price=p=>Number(p[1])===0?"ПОД ЗАКАЗ":p[1]+" €";
 const cartSum=()=>cart.reduce((s,item)=>{const p=Number(item.price)||0;return s+(p>0?p:0);},0);
 
-/* ==== FIREBASE: загрузка + real-time ==== */
+/* ==== FIREBASE ==== */
 async function loadProducts(){
   try{
     const snap = await getDocs(collection(db,"products"));
@@ -261,14 +262,13 @@ async function loadProducts(){
   }
 }
 
-/* Автообновление — если кто-то добавил товар, все видят */
 onSnapshot(collection(db,"products"), snap=>{
   products = snap.docs.map(d=>({id:d.id, data:d.data()}));
   render();
   if($("adminBox").style.display==="flex") renderAdmin();
 });
 
-/* ==== РЕНДЕР КАТАЛОГА ==== */
+/* ==== КАТАЛОГ ==== */
 function render(){
   if(!products.length){
     $("products").innerHTML='<div class="loading">Каталог пуст</div>';
@@ -284,7 +284,15 @@ function render(){
 
 function add(i){
   const d=products[i].data;
-  cart.push({name:d.name,price:Number(d.price)||0,img:d.img,color:"",size:""});
+  const sizesArr = Array.isArray(d.sizes) ? d.sizes : [];
+  cart.push({
+    name:d.name,
+    price:Number(d.price)||0,
+    img:d.img,
+    sizes:sizesArr,
+    color:"",
+    size:""
+  });
   updateCartBadge();
   openCart();
 }
@@ -301,7 +309,8 @@ function renderCart(){
       const pNum=Number(item.price)||0;
       const p=pNum===0?"ПОД ЗАКАЗ":pNum+" €";
       const colorOpts='<option value="">Цвет</option>'+COLORS.map(c=>`<option ${item.color===c?'selected':''}>${c}</option>`).join("");
-      const sizeOpts='<option value="">Размер</option>'+SIZES.map(s=>`<option ${item.size===s?'selected':''}>${s}</option>`).join("");
+      const sizesList = (item.sizes && item.sizes.length) ? item.sizes : ["S","M","L"];
+      const sizeOpts='<option value="">Размер</option>'+sizesList.map(s=>`<option ${item.size===String(s)?'selected':''}>${s}</option>`).join("");
       return `<div class="cart-item"><div class="ci-img">${img}</div><div class="ci-info"><b>${item.name}</b><small>${p}</small><div class="ci-controls"><select onchange="setColor(${idx},this.value)">${colorOpts}</select><select onchange="setSize(${idx},this.value)">${sizeOpts}</select></div></div><button class="ci-del" onclick="removeFromCart(${idx})">✕</button></div>`;
     }).join("");
   }
@@ -361,11 +370,11 @@ function renderAdmin(){
   b.innerHTML=products.map((p,i)=>{
     const d=p.data;
     const t=d.img?`<img src="${d.img}">`:'🖼';
-    return `<div class="admin-item"><div class="thumb">${t}</div><div class="fields"><input value="${String(d.name).replace(/"/g,'&quot;')}" onchange="editName('${p.id}',this.value)"><input type="number" min="0" value="${d.price}" onchange="editPrice('${p.id}',this.value)"></div><div class="actions"><button class="btn-img" onclick="changeImage('${p.id}')">🖼</button><button class="btn-del" onclick="removeProduct('${p.id}')">✕</button></div></div>`;
+    const sizesStr = Array.isArray(d.sizes) ? d.sizes.join(",") : "";
+    return `<div class="admin-item"><div class="thumb">${t}</div><div class="fields"><input value="${String(d.name).replace(/"/g,'&quot;')}" onchange="editName('${p.id}',this.value)"><div class="row2"><input type="number" min="0" value="${d.price}" onchange="editPrice('${p.id}',this.value)"><input value="${sizesStr}" placeholder="S,M,L или 38,39,40" onchange="editSizes('${p.id}',this.value)"></div></div><div class="actions"><button class="btn-img" onclick="changeImage('${p.id}')">🖼</button><button class="btn-del" onclick="removeProduct('${p.id}')">✕</button></div></div>`;
   }).join("");
 }
 
-/* ==== КАРТИНКИ — сжимаем и храним как base64 в Firestore ==== */
 function compressImage(file,max=600,q=.75){
   return new Promise((res,rej)=>{
     const r=new FileReader();
@@ -399,16 +408,26 @@ function changeImage(id){
   inp.click();
 }
 
+/* Парсим размеры из строки "S,M,L" или "38, 39, 40" */
+function parseSizes(str){
+  return String(str||"").split(",").map(s=>s.trim()).filter(s=>s.length>0);
+}
+
 /* ==== ДОБАВИТЬ ТОВАР ==== */
 async function addProduct(){
   if(!isAdmin)return;
-  const n=$("newName").value.trim(),pv=$("newPrice").value.trim(),u=$("newImgUrl").value.trim();
+  const n=$("newName").value.trim();
+  const pv=$("newPrice").value.trim();
+  const u=$("newImgUrl").value.trim();
+  const sz=$("newSizes").value.trim();
   if(!n){alert("Введите название");return;}
   const pn=pv===""?0:parseInt(pv);
   if(isNaN(pn)||pn<0){alert("Плохая цена");return;}
+  const sizesArr = parseSizes(sz);
+  if(!sizesArr.length){alert("Введите хотя бы один размер (например: S,M,L или 38,39,40)");return;}
   try{
-    await addDoc(collection(db,"products"),{name:n,price:pn,img:newImg||u||""});
-    $("newName").value="";$("newPrice").value="";$("newImgUrl").value="";$("newImgFile").value="";$("newImgPreview").innerHTML='🖼';newImg="";
+    await addDoc(collection(db,"products"),{name:n,price:pn,img:newImg||u||"",sizes:sizesArr});
+    $("newName").value="";$("newPrice").value="";$("newImgUrl").value="";$("newImgFile").value="";$("newSizes").value="";$("newImgPreview").innerHTML='🖼';newImg="";
   }catch(e){alert("Ошибка сохранения: "+e.message);}
 }
 
@@ -425,13 +444,19 @@ async function editPrice(id,v){
   if(isNaN(n)||n<0){renderAdmin();return;}
   try{await updateDoc(doc(db,"products",id),{price:Number(n)});}catch(e){alert("Ошибка");}
 }
+async function editSizes(id,v){
+  if(!isAdmin)return;
+  const arr = parseSizes(v);
+  if(!arr.length){alert("Введите размеры");renderAdmin();return;}
+  try{await updateDoc(doc(db,"products",id),{sizes:arr});}catch(e){alert("Ошибка");}
+}
 async function removeProduct(id){
   if(!isAdmin)return;
   if(!confirm("Удалить товар?"))return;
   try{await deleteDoc(doc(db,"products",id));}catch(e){alert("Ошибка");}
 }
 
-/* ==== 3D-КУБ: вращение мышкой ==== */
+/* ==== КУБ ==== */
 (function(){
   const cube=document.getElementById('cube3d');
   if(!cube)return;
@@ -448,7 +473,7 @@ async function removeProduct(id){
   window.addEventListener('touchend',end);
 })();
 
-/* Делаем функции глобальными (для onclick) */
+/* ==== Глобальные функции для onclick ==== */
 window.add=add;
 window.openCart=openCart;
 window.closeCart=closeCart;
@@ -462,6 +487,7 @@ window.closeAdmin=closeAdmin;
 window.addProduct=addProduct;
 window.editName=editName;
 window.editPrice=editPrice;
+window.editSizes=editSizes;
 window.removeProduct=removeProduct;
 window.changeImage=changeImage;
 
