@@ -15,7 +15,14 @@ height:65px;padding:0 6%;display:flex;
 align-items:center;justify-content:space-between;
 border-bottom:1px solid #222
 }
-.logo{font-size:21px;font-weight:bold}
+.logo{
+font-size:21px;font-weight:bold;
+cursor:default;
+-webkit-user-select:none;-moz-user-select:none;user-select:none;
+-webkit-tap-highlight-color:transparent;
+padding:8px 4px;transition:color .2s
+}
+.logo.holding{color:#888}
 .cart{background:#fff;border:0;padding:11px 17px;border-radius:8px}
 
 .hero{
@@ -130,35 +137,10 @@ align-items:center;margin-top:12px;gap:5px
 }
 .add{background:#fff;border:0;padding:9px;border-radius:6px}
 
-/* ===== СЕКЦИЯ ЗАЩИТЫ ===== */
-.guard{
-padding:60px 6%;text-align:center;
-border-top:1px solid #1a1a1a;margin-top:40px
-}
-.guard h3{
-font-size:24px;margin-bottom:10px;color:#888;font-weight:normal
-}
-.guard p{
-color:#555;font-size:13px;margin-bottom:20px;max-width:400px;
-margin-left:auto;margin-right:auto;line-height:1.6
-}
-.guard-btn{
-background:#111;color:#fff;border:1px solid #333;
-padding:14px 28px;border-radius:8px;font-size:14px;
-font-weight:bold;letter-spacing:1px;transition:.25s
-}
-.guard-btn:hover{background:#1a1a1a;border-color:#555}
-.guard-btn.on{
-background:#0a2a0a;border-color:#2a5a2a;color:#6f6
-}
-.status{
-display:block;margin-top:12px;font-size:12px;color:#555
-}
-.status.on{color:#6f6}
-
 .drawer,.modal{
 position:fixed;inset:0;background:#000d;z-index:20;
-display:none;align-items:center;justify-content:center
+display:none;align-items:center;justify-content:center;
+padding:20px;overflow-y:auto
 }
 .box{
 background:#111;border:1px solid #333;border-radius:12px;
@@ -169,11 +151,54 @@ width:100%;padding:12px;margin:7px 0;
 background:#191919;color:white;border:1px solid #333;border-radius:6px
 }
 .send{
-width:100%;padding:13px;margin-top:10px;border:0
+width:100%;padding:13px;margin-top:10px;border:0;
+background:#fff;color:#000;border-radius:6px;font-weight:bold
 }
 .close{
 background:#222;color:white;padding:10px;border:0;
-margin-top:8px;width:100%
+margin-top:8px;width:100%;border-radius:6px
+}
+
+/* ===== АДМИН-ПАНЕЛЬ ===== */
+.admin-box{width:520px}
+.admin-box h2{margin-bottom:5px}
+.admin-box .sub{color:#666;font-size:12px;margin-bottom:18px}
+.admin-form{
+display:grid;grid-template-columns:2fr 1fr auto;gap:8px;
+margin-bottom:20px
+}
+.admin-form input{margin:0}
+.admin-form button{
+background:#fff;color:#000;border:0;padding:0 18px;
+border-radius:6px;font-weight:bold
+}
+.admin-list{max-height:340px;overflow-y:auto;margin-bottom:15px}
+.admin-item{
+display:flex;justify-content:space-between;align-items:center;
+padding:10px;background:#161616;border:1px solid #262626;
+border-radius:8px;margin-bottom:7px;gap:8px
+}
+.admin-item input{
+margin:0;flex:1;padding:8px;font-size:13px
+}
+.admin-item button{
+background:#3a1010;color:#f88;border:1px solid #5a1a1a;
+padding:8px 12px;border-radius:6px;font-size:13px
+}
+.admin-item button:hover{background:#4a1515}
+.empty{
+color:#555;text-align:center;padding:20px;font-size:13px
+}
+
+/* ===== ОКНО ПАРОЛЯ ===== */
+.login-box{width:340px;text-align:center}
+.login-box h2{margin-bottom:8px;font-size:22px}
+.login-box .hint{color:#555;font-size:12px;margin-bottom:16px}
+.login-box input{
+text-align:center;font-size:16px;letter-spacing:3px;margin-bottom:10px
+}
+.login-error{
+color:#f55;font-size:12px;height:16px;margin-bottom:6px
 }
 
 @media(max-width:700px){
@@ -192,6 +217,8 @@ right:-2%;opacity:.72
 .products{grid-template-columns:1fr 1fr}
 .photo{height:180px}
 .shop h2{font-size:45px}
+.admin-form{grid-template-columns:1fr 1fr}
+.admin-form button{padding:12px}
 }
 
 @media(max-width:400px){
@@ -205,7 +232,7 @@ right:-2%;opacity:.72
 <body>
 
 <nav>
-<div class="logo">marcastorre.</div>
+<div class="logo" id="logo">marcastorre.</div>
 <button class="cart" onclick="openCart()">
 🛒 <span id="num">0</span>
 </button>
@@ -272,15 +299,41 @@ onclick="document.getElementById('shop').scrollIntoView()">
 
 </section>
 
-<!-- ===== СЕКЦИЯ ЗАЩИТЫ ОТ КОПИРОВАНИЯ ===== -->
-<section class="guard">
-<h3>🔒 Защита контента</h3>
-<p>Включите защиту, чтобы запретить копирование текста, картинок и открытие исходного кода сайта.</p>
-<button class="guard-btn" id="guardBtn" onclick="toggleGuard()">
-ВКЛЮЧИТЬ ЗАЩИТУ
-</button>
-<span class="status" id="guardStatus">Статус: выключена</span>
-</section>
+<!-- ===== ОКНО ВХОДА В АДМИНКУ ===== -->
+<div class="modal" id="loginBox">
+<div class="box login-box">
+
+<h2>🔐 ВХОД</h2>
+<div class="hint">Введите пароль администратора</div>
+
+<input type="password" id="passInput" placeholder="••••••••" autocomplete="off">
+<div class="login-error" id="loginError"></div>
+
+<button class="send" onclick="tryLogin()">ВОЙТИ</button>
+<button class="close" onclick="closeLogin()">ОТМЕНА</button>
+
+</div>
+</div>
+
+<!-- ===== АДМИН-ПАНЕЛЬ ===== -->
+<div class="modal" id="adminBox">
+<div class="box admin-box">
+
+<h2>УПРАВЛЕНИЕ КАТАЛОГОМ</h2>
+<div class="sub">Добавляй, редактируй и удаляй товары</div>
+
+<div class="admin-form">
+<input id="newName" placeholder="Название товара">
+<input id="newPrice" type="number" placeholder="Цена" min="0">
+<button onclick="addProduct()">+</button>
+</div>
+
+<div class="admin-list" id="adminList"></div>
+
+<button class="close" onclick="closeAdmin()">ЗАКРЫТЬ</button>
+
+</div>
+</div>
 
 <!-- КОРЗИНА -->
 
@@ -353,238 +406,272 @@ onclick="document.getElementById('shop').scrollIntoView()">
 
 <script>
 
-const manager="markulik52";
+/* ============================================================
+   ⚠️ НАСТРОЙКИ АДМИНА
+   ============================================================ */
 
-/* ===== ЗАЩИТА ОТ КОПИРОВАНИЯ (КНОПКА) ===== */
+// Пароль для входа в админку
+const ADMIN_PASSWORD = "MARCA2026";
 
-let guardOn = false;
-let guardHandlers = [];
+// Сколько миллисекунд нужно УДЕРЖИВАТЬ логотип
+const HOLD_TIME = 1000; // 1 секунда
 
-function enableGuard(){
+// Сколько минут помнить вход после ввода пароля
+const SESSION_MINUTES = 30;
 
-  // 1. Запрет ПКМ
-  const ctx = e => e.preventDefault();
-  document.addEventListener('contextmenu', ctx);
-  guardHandlers.push(['contextmenu', ctx]);
+/* ============================================================
+   КОНЕЦ НАСТРОЕК
+   ============================================================ */
 
-  // 2. Запрет выделения
-  const sel = e => e.preventDefault();
-  document.addEventListener('selectstart', sel);
-  guardHandlers.push(['selectstart', sel]);
+const manager = "markulik52";
 
-  // 3. Запрет перетаскивания
-  const drg = e => e.preventDefault();
-  document.addEventListener('dragstart', drg);
-  guardHandlers.push(['dragstart', drg]);
-
-  // 4. Запрет копирования / вырезания
-  const cp = e => {
-    e.preventDefault();
-    if(e.clipboardData)
-      e.clipboardData.setData('text/plain', 'Копирование запрещено © MARCA.STORRE');
-  };
-  document.addEventListener('copy', cp);
-  document.addEventListener('cut', cp);
-  guardHandlers.push(['copy', cp]);
-  guardHandlers.push(['cut', cp]);
-
-  // 5. Запрет горячих клавиш
-  const kd = function(e){
-    const k = e.key.toLowerCase();
-    if(e.ctrlKey && ['c','x','a','u','s','p'].includes(k)){
-      e.preventDefault(); return false;
-    }
-    if(e.ctrlKey && e.shiftKey && ['i','j','c'].includes(k)){
-      e.preventDefault(); return false;
-    }
-    if(e.key === 'F12'){
-      e.preventDefault(); return false;
-    }
-  };
-  document.addEventListener('keydown', kd);
-  guardHandlers.push(['keydown', kd]);
-
-  // 6. CSS-защита выделения
-  document.body.style.userSelect = 'none';
-  document.body.style.webkitUserSelect = 'none';
-  document.body.style.webkitTouchCallout = 'none';
-}
-
-function disableGuard(){
-  guardHandlers.forEach(([ev, fn]) => document.removeEventListener(ev, fn));
-  guardHandlers = [];
-  document.body.style.userSelect = '';
-  document.body.style.webkitUserSelect = '';
-  document.body.style.webkitTouchCallout = '';
-}
-
-function toggleGuard(){
-  guardOn = !guardOn;
-  const btn = document.getElementById('guardBtn');
-  const st  = document.getElementById('guardStatus');
-
-  if(guardOn){
-    enableGuard();
-    btn.textContent = '🔓 ВЫКЛЮЧИТЬ ЗАЩИТУ';
-    btn.classList.add('on');
-    st.textContent = 'Статус: включена ✓';
-    st.classList.add('on');
-  } else {
-    disableGuard();
-    btn.textContent = 'ВКЛЮЧИТЬ ЗАЩИТУ';
-    btn.classList.remove('on');
-    st.textContent = 'Статус: выключена';
-    st.classList.remove('on');
-  }
-}
-
-/* ===== КОНЕЦ ЗАЩИТЫ ===== */
-
+/* ===== КАТАЛОГ ===== */
 /* ЦЕНА 0 = ПОД ЗАКАЗ */
 
-let products=[
-["MARCA BASIC TEE",450],
-["CORE HOODIE",950],
-["LIMITED TEE",0],
-["STREET JACKET",1400]
+let products = JSON.parse(localStorage.getItem('marca_products')) || [
+  ["MARCA BASIC TEE", 450],
+  ["CORE HOODIE", 950],
+  ["LIMITED TEE", 0],
+  ["STREET JACKET", 1400]
 ];
 
-let cart=[],sum=0;
+let cart = [], sum = 0;
+let isAdmin = false;
 
-const productsBox=document.getElementById("products");
+const productsBox = document.getElementById("products");
+
+function saveProducts(){
+  localStorage.setItem('marca_products', JSON.stringify(products));
+}
 
 function price(p){
-return p[1]==0?"ПОД ЗАКАЗ":p[1]+" лей";
+  return p[1] == 0 ? "ПОД ЗАКАЗ" : p[1] + " лей";
 }
 
 function render(){
-
-productsBox.innerHTML="";
-
-products.forEach((p,i)=>{
-
-productsBox.innerHTML+=`
-
-<div class="product">
-
-<div class="photo">
-<div class="fake"></div>
-</div>
-
-<div class="info">
-
-<b>${p[0]}</b>
-
-<br>
-
-<small>MARCA.STORRE</small>
-
-<div class="row">
-
-<b>${price(p)}</b>
-
-<button class="add"
-onclick="add(${i})">
-В КОРЗИНУ
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-`;
-
-});
-
+  productsBox.innerHTML = "";
+  if(!products.length){
+    productsBox.innerHTML = '<div class="empty" style="grid-column:1/-1">Каталог пуст</div>';
+    return;
+  }
+  products.forEach((p, i) => {
+    productsBox.innerHTML += `
+      <div class="product">
+        <div class="photo"><div class="fake"></div></div>
+        <div class="info">
+          <b>${p[0]}</b><br>
+          <small>MARCA.STORRE</small>
+          <div class="row">
+            <b>${price(p)}</b>
+            <button class="add" onclick="add(${i})">В КОРЗИНУ</button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
 }
 
 function add(i){
-
-cart.push(products[i]);
-
-if(products[i][1]>0)
-sum+=products[i][1];
-
-document.getElementById("num").textContent=cart.length;
-
-openCart();
+  cart.push(products[i]);
+  if(products[i][1] > 0) sum += products[i][1];
+  document.getElementById("num").textContent = cart.length;
+  openCart();
 }
 
+/* ===== УДЕРЖАНИЕ ЛОГОТИПА ===== */
+
+const logoEl = document.getElementById("logo");
+let holdTimer = null;
+let holdTriggered = false;
+
+function startHold(){
+  holdTriggered = false;
+  logoEl.classList.add('holding');
+  holdTimer = setTimeout(() => {
+    holdTriggered = true;
+    logoEl.classList.remove('holding');
+    // лёгкая вибрация на телефоне (если поддерживается)
+    if(navigator.vibrate) navigator.vibrate(30);
+    openLogin();
+  }, HOLD_TIME);
+}
+
+function cancelHold(){
+  if(holdTimer){
+    clearTimeout(holdTimer);
+    holdTimer = null;
+  }
+  logoEl.classList.remove('holding');
+}
+
+// Мышь
+logoEl.addEventListener('mousedown', startHold);
+logoEl.addEventListener('mouseup', cancelHold);
+logoEl.addEventListener('mouseleave', cancelHold);
+
+// Тач (телефон)
+logoEl.addEventListener('touchstart', e => { startHold(); }, {passive:true});
+logoEl.addEventListener('touchend', cancelHold);
+logoEl.addEventListener('touchcancel', cancelHold);
+logoEl.addEventListener('touchmove', cancelHold);
+
+// Запрет обычного клика по логотипу (ничего не делает)
+logoEl.addEventListener('click', e => e.preventDefault());
+
+/* ===== ОКНО ПАРОЛЯ ===== */
+
+function openLogin(){
+  if(isAdmin){ openAdmin(); return; }
+
+  document.getElementById("loginBox").style.display = "flex";
+  document.getElementById("loginError").textContent = "";
+  document.getElementById("passInput").value = "";
+
+  setTimeout(() => document.getElementById("passInput").focus(), 100);
+}
+
+function closeLogin(){
+  document.getElementById("loginBox").style.display = "none";
+}
+
+function tryLogin(){
+  const val = document.getElementById("passInput").value;
+  if(val === ADMIN_PASSWORD){
+    isAdmin = true;
+    localStorage.setItem('marca_admin_until', Date.now() + SESSION_MINUTES * 60 * 1000);
+    closeLogin();
+    openAdmin();
+  } else {
+    document.getElementById("loginError").textContent = "Неверный пароль";
+    document.getElementById("passInput").value = "";
+  }
+}
+
+document.getElementById("passInput").addEventListener('keydown', e => {
+  if(e.key === 'Enter') tryLogin();
+});
+
+// Проверка активной сессии при загрузке
+(function checkSession(){
+  const until = parseInt(localStorage.getItem('marca_admin_until') || '0');
+  if(until > Date.now()) isAdmin = true;
+})();
+
+/* ===== АДМИН-ПАНЕЛЬ ===== */
+
+function openAdmin(){
+  if(!isAdmin){ openLogin(); return; }
+  document.getElementById("adminBox").style.display = "flex";
+  renderAdmin();
+}
+
+function closeAdmin(){
+  document.getElementById("adminBox").style.display = "none";
+}
+
+function renderAdmin(){
+  const box = document.getElementById("adminList");
+  if(!products.length){
+    box.innerHTML = '<div class="empty">Товаров пока нет</div>';
+    return;
+  }
+  box.innerHTML = products.map((p, i) => `
+    <div class="admin-item">
+      <input value="${p[0]}" onchange="editName(${i}, this.value)" placeholder="Название">
+      <input type="number" min="0" value="${p[1]}" onchange="editPrice(${i}, this.value)" style="max-width:90px">
+      <button onclick="removeProduct(${i})">✕</button>
+    </div>
+  `).join("");
+}
+
+function addProduct(){
+  if(!isAdmin) return;
+
+  const name = document.getElementById("newName").value.trim();
+  const priceVal = document.getElementById("newPrice").value.trim();
+
+  if(!name){ alert("Введите название товара"); return; }
+
+  const priceNum = priceVal === "" ? 0 : parseInt(priceVal);
+  if(isNaN(priceNum) || priceNum < 0){ alert("Некорректная цена"); return; }
+
+  products.push([name, priceNum]);
+  saveProducts();
+  render();
+  renderAdmin();
+
+  document.getElementById("newName").value = "";
+  document.getElementById("newPrice").value = "";
+}
+
+function editName(i, val){
+  if(!isAdmin) return;
+  const v = val.trim();
+  if(!v){ alert("Название не может быть пустым"); renderAdmin(); return; }
+  products[i][0] = v;
+  saveProducts();
+  render();
+}
+
+function editPrice(i, val){
+  if(!isAdmin) return;
+  const n = parseInt(val);
+  if(isNaN(n) || n < 0){ alert("Некорректная цена"); renderAdmin(); return; }
+  products[i][1] = n;
+  saveProducts();
+  render();
+}
+
+function removeProduct(i){
+  if(!isAdmin) return;
+  if(!confirm(`Удалить "${products[i][0]}"?`)) return;
+  products.splice(i, 1);
+  saveProducts();
+  render();
+  renderAdmin();
+}
+
+/* ===== КОРЗИНА ===== */
+
 function openCart(){
-
-document.getElementById("cartBox").style.display="flex";
-
-document.getElementById("sum").textContent=sum;
-
-document.getElementById("items").innerHTML=
-
-cart.map(x=>
-`<p style="margin:8px 0">
-${x[0]} — ${price(x)}
-</p>`
-).join("")||"Корзина пустая";
-
+  document.getElementById("cartBox").style.display = "flex";
+  document.getElementById("sum").textContent = sum;
+  document.getElementById("items").innerHTML =
+    cart.map(x => `<p style="margin:8px 0">${x[0]} — ${price(x)}</p>`).join("")
+    || "Корзина пустая";
 }
 
 function closeCart(){
-
-document.getElementById("cartBox").style.display="none";
-
+  document.getElementById("cartBox").style.display = "none";
 }
 
 function order(){
-
-if(!cart.length){
-alert("Корзина пустая");
-return;
-}
-
-closeCart();
-
-document.getElementById("orderBox").style.display="flex";
-
-document.getElementById("orderItems").innerHTML=
-
-cart.map(x=>
-`<p style="margin:8px 0">
-${x[0]} — ${price(x)}
-</p>`
-).join("");
-
-document.getElementById("orderSum").textContent=
-sum;
-
+  if(!cart.length){ alert("Корзина пустая"); return; }
+  closeCart();
+  document.getElementById("orderBox").style.display = "flex";
+  document.getElementById("orderItems").innerHTML =
+    cart.map(x => `<p style="margin:8px 0">${x[0]} — ${price(x)}</p>`).join("");
+  document.getElementById("orderSum").textContent = sum;
 }
 
 function send(){
+  let c = document.getElementById("color").value;
+  let s = document.getElementById("size").value;
 
-let c=document.getElementById("color").value;
-let s=document.getElementById("size").value;
+  if(!c || !s){ alert("Выберите цвет и размер"); return; }
 
-if(!c||!s){
-alert("Выберите цвет и размер");
-return;
-}
+  let list = cart.map(x => x[0] + " — " + price(x)).join("\n");
 
-let list=cart.map(x=>
-x[0]+" — "+price(x)
-).join("\n");
-
-let text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE
+  let text = `🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE
 
 ${list}
 
 🎨 Цвет: ${c}
 📏 Размер: ${s}
 
-💰 СУММА: ${sum==0?"ПОД ЗАКАЗ":sum+" лей"}`;
+💰 СУММА: ${sum == 0 ? "ПОД ЗАКАЗ" : sum + " лей"}`;
 
-location.href=
-"https://t.me/"+manager+
-"?text="+encodeURIComponent(text);
-
+  location.href = "https://t.me/" + manager + "?text=" + encodeURIComponent(text);
 }
 
 render();
