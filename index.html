@@ -7,7 +7,11 @@
 
 <style>
 *{box-sizing:border-box;margin:0}
-body{background:#070707;color:#fff;font-family:Arial;overflow-x:hidden}
+body{
+background:#070707;color:#fff;font-family:Arial;overflow-x:hidden;
+-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;
+}
 button{cursor:pointer}
 
 nav{
@@ -176,7 +180,7 @@ right:-2%;opacity:.72
 </style>
 </head>
 
-<body>
+<body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
 
 <nav>
 <div class="logo">marcastorre.</div>
@@ -321,6 +325,54 @@ onclick="document.getElementById('shop').scrollIntoView()">
 <script>
 
 const manager="markulik52";
+
+/* ===== ЗАЩИТА ОТ КОПИРОВАНИЯ ===== */
+
+// Запрет контекстного меню (ПКМ)
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// Запрет выделения текста
+document.addEventListener('selectstart', e => e.preventDefault());
+
+// Запрет перетаскивания (картинок, текста)
+document.addEventListener('dragstart', e => e.preventDefault());
+
+// Запрет горячих клавиш
+document.addEventListener('keydown', function(e){
+  // Ctrl+C, Ctrl+X, Ctrl+A, Ctrl+U (исходник), Ctrl+S (сохранить), F12 (devtools)
+  if(e.ctrlKey && ['c','x','a','u','s'].includes(e.key.toLowerCase())){
+    e.preventDefault();
+    return false;
+  }
+  // Ctrl+Shift+I / J / C — инструменты разработчика
+  if(e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase())){
+    e.preventDefault();
+    return false;
+  }
+  // F12
+  if(e.key === 'F12'){
+    e.preventDefault();
+    return false;
+  }
+});
+
+// Запрет копирования через событие copy
+document.addEventListener('copy', e => {
+  e.preventDefault();
+  e.clipboardData.setData('text/plain', 'Копирование запрещено © MARCA.STORRE');
+});
+
+// Запрет вырезания
+document.addEventListener('cut', e => e.preventDefault());
+
+// Дополнительная защита: динамически очищаем буфер при выделении
+setInterval(() => {
+  if(window.getSelection && window.getSelection().toString()){
+    // ничего не делаем, выделение уже запрещено CSS, но на всякий случай
+  }
+}, 1000);
+
+/* ===== КОНЕЦ ЗАЩИТЫ ===== */
 
 /* ЦЕНА 0 = ПОД ЗАКАЗ */
 
