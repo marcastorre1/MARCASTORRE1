@@ -264,10 +264,12 @@ function sendTelegram(){
   if(!cart.length){alert("Корзина пустая");return;}
   const missing=cart.findIndex(x=>!x.color||!x.size);
   if(missing!==-1){alert(`Укажите цвет и размер для товара:\n"${cart[missing].name}"`);return;}
-  let num=0;
-  const list=cart.map(x=>{num++;const p=x.price==0?"ПОД ЗАКАЗ":x.price+" лей";return `${num}. ${x.name}\n   🎨 Цвет: ${x.color}\n   📏 Размер: ${x.size}\n   💵 Цена: ${p}`;}).join("\n\n");
+  const list=cart.map(x=>{
+    const p=x.price==0?"ПОД ЗАКАЗ":x.price+" лей";
+    return `• ${x.name} — ${p}\n\n🎨 Цвет: ${x.color}\n📏 Размер: ${x.size}`;
+  }).join("\n\n");
   const total=cartSum();
-  const text=`🛍 НОВЫЙ ЗАКАЗ — MARCA.STORRE\n━━━━━━━━━━━━━━━━━━━━\n\n${list}\n\n━━━━━━━━━━━━━━━━━━━━\n💰 ПОЛНАЯ СТОИМОСТЬ: ${total==0?"ПОД ЗАКАЗ":total+" лей"}\n📦 Товаров в заказе: ${cart.length}\n\nСпасибо за заказ! 🖤`;
+  const text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n💰 СУММА: ${total==0?"ПОД ЗАКАЗ":total+" лей"}`;
   location.href="https://t.me/"+MGR+"?text="+encodeURIComponent(text);
 }
 const logoEl=$("logo");
