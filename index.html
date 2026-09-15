@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MARCA.STORRE</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#080808;color:white;
+ font-family:Arial,sans-serif
+}
+nav{
+ height:70px;padding:0 6%;display:flex;
+ align-items:center;justify-content:space-between;
+ border-bottom:1px solid #222;
+ position:sticky;top:0;background:#080808ee;
+ z-index:10
+}
+.logo{font-size:22px;font-weight:bold}
+.logo span{color:#666}
+button{
+ cursor:pointer;border:0;border-radius:8px;
+ padding:12px 18px;font-weight:bold
+}
+.cartBtn{background:#fff;color:#000}
+.hero{
+ min-height:80vh;padding:120px 6%;
+ display:flex;align-items:center
+}
+.hero h1{
+ font-size:clamp(55px,10vw,130px);
+ line-height:.85;margin:0
+}
+.hero h1 span{color:#555}
+.hero p{color:#777;max-width:500px;line-height:1.7}
+.shop{padding:80px 6%}
+h2{font-size:55px}
+h2 span{color:#555}
+.categories{
+ display:flex;gap:8px;flex-wrap:wrap;margin:25px 0
+}
+.cat{
+ background:#151515;color:#aaa;
+ border:1px solid #292929
+}
+.cat.active{background:#fff;color:#000}
+.products{
+ display:grid;grid-template-columns:repeat(4,1fr);
+ gap:15px
+}
+.product{
+ background:#111;border:1px solid #222;
+ border-radius:12px;overflow:hidden
+}
+.photo{
+ height:300px;display:flex;
+ align-items:center;justify-content:center;
+ background:#181818
+}
+.photo img{
+ width:100%;height:100%;object-fit:cover
+}
+.fake{
+ width:130px;height:190px;
+ background:linear-gradient(135deg,#eee,#555);
+ border-radius:15px
+}
+.info{padding:18px}
+.info small{color:#666}
+.row{
+ display:flex;justify-content:space-between;
+ align-items:center;margin-top:15px
+}
+.add{background:#fff;color:#000}
+.banner{
+ margin:40px 6% 100px;padding:60px;
+ background:#111;border:1px solid #222;
+ border-radius:15px
+}
+footer{
+ padding:40px 6%;border-top:1px solid #222;
+ color:#666
+}
+
+/* КОРЗИНА */
+.cart{
+ position:fixed;top:0;right:-420px;
+ width:400px;max-width:90%;height:100%;
+ background:#111;z-index:100;
+ padding:25px;transition:.4s;
+ box-shadow:-20px 0 60px #000
+}
+.cart.open{right:0}
+.cartHead{
+ display:flex;justify-content:space-between;
+ border-bottom:1px solid #222;padding-bottom:15px
+}
+.cartItems{margin-top:20px}
+.cartItem{
+ display:flex;justify-content:space-between;
+ padding:14px 0;border-bottom:1px solid #222
+}
+.total{
+ position:absolute;bottom:25px;
+ left:25px;right:25px
+}
+.totalLine{
+ display:flex;justify-content:space-between;
+ font-size:20px;margin-bottom:15px
+}
+.checkout{width:100%;background:#fff}
+
+/* ЗАКАЗ */
+.modal{
+ display:none;position:fixed;inset:0;
+ background:#000d;z-index:200;
+ align-items:center;justify-content:center;
+ padding:20px
+}
+.modal.show{display:flex}
+.box{
+ width:420px;max-width:100%;
+ background:#111;border:1px solid #333;
+ border-radius:15px;padding:25px
+}
+.box h2{font-size:28px;margin-top:0}
+input,select{
+ width:100%;padding:13px;margin:7px 0;
+ background:#181818;color:#fff;
+ border:1px solid #333;border-radius:7px
+}
+.send{
+ width:100%;background:#fff;color:#000;
+ margin-top:10px
+}
+.back{
+ width:100%;background:#222;color:#fff;
+ margin-top:8px
+}
+
+/* АДМИН */
+.admin{
+ display:none;position:fixed;inset:0;
+ background:#080808;z-index:150;
+ overflow:auto;padding:30px 6%
+}
+.admin.show{display:block}
+.adminBox{
+ max-width:800px;margin:auto;
+ background:#111;padding:25px;
+ border:1px solid #222;border-radius:15px
+}
+.admin input,.admin select{margin-bottom:10px}
+.adminProduct{
+ display:flex;justify-content:space-between;
+ padding:12px 0;border-bottom:1px solid #222
+}
+.del{
+ background:#311;color:#f88
+}
+
+@media(max-width:800px){
+ .products{grid-template-columns:repeat(2,1fr)}
+ .hero{padding:80px 6%}
+ .hero h1{font-size:60px}
+}
+@media(max-width:500px){
+ .products{grid-template-columns:1fr 1fr}
+ .photo{height:220px}
+ .cart{width:100%}
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+ <div class="logo" id="logo">
+  marcastorre<span>.</span>
+ </div>
+
+ <button class="cartBtn" onclick="openCart()">
+  🛒 <span id="count">0</span>
+ </button>
+</nav>
+
+
+<section class="hero">
+ <div>
+  <p>MARCA.STORRE / 2026</p>
+
+  <h1>
+   WEAR<br>
+   <span>YOUR</span><br>
+   MARK.
+  </h1>
+
+  <p>
+   Минималистичный streetwear для тех,
+   кто носит свой характер.
+  </p>
+
+  <button onclick="document.getElementById('shop').scrollIntoView()">
+   СМОТРЕТЬ КОЛЛЕКЦИЮ
+  </button>
+ </div>
+</section>
+
+
+<section class="shop" id="shop">
+
+ <p>COLLECTION</p>
+
+ <h2>THE <span>DROP.</span></h2>
+
+ <div class="categories" id="categories"></div>
+
+ <div class="products" id="products"></div>
+
+</section>
+
+
+<section class="banner">
+ <h2>NO<br><span>RULES.</span></h2>
+ <p>MARCA.STORRE — одежда с характером.</p>
+</section>
+
+
+<footer>
+ © 2026 MARCA.STORRE
+</footer>
+
+
+<!-- КОРЗИНА -->
+
+<div class="cart" id="cart">
+
+ <div class="cartHead">
+  <b>КОРЗИНА</b>
+  <button onclick="closeCart()">✕</button>
+ </div>
+
+ <div class="cartItems" id="cartItems">
+  Пусто
+ </div>
+
+ <div class="total">
+
+  <div class="totalLine">
+   <span>Итого:</span>
+   <b><span id="total">0</span> лей</b>
+  </div>
+
+  <button class="checkout" onclick="openOrder()">
+   ОФОРМИТЬ ЗАКАЗ
+  </button>
+
+ </div>
+
+</div>
+
+
+<!-- ОКНО ЗАКАЗА -->
+
+<div class="modal" id="orderModal">
+
+ <div class="box">
+
+  <h2>ЗАКАЗ</h2>
+
+  <div id="orderProducts"></div>
+
+  <select id="color">
+   <option value="">Выберите цвет</option>
+   <option>Чёрный</option>
+   <option>Белый</option>
+   <option>Серый</option>
+   <option>Бежевый</option>
+   <option>Синий</option>
+   <option>Красный</option>
+  </select>
+
+  <select id="size">
+   <option value="">Выберите размер</option>
+   <option>XS</option>
+   <option>S</option>
+   <option>M</option>
+   <option>L</option>
+   <option>XL</option>
+   <option>XXL</option>
+  </select>
+
+  <input id="qty" type="number" min="1" value="1">
+
+  <h3>
+   Сумма:
+   <span id="orderTotal">0</span> лей
+  </h3>
+
+  <button class="send" onclick="sendOrder()">
+   📲 ЗАКАЗАТЬ В TELEGRAM
+  </button>
+
+  <button class="back" onclick="closeOrder()">
+   НАЗАД
+  </button>
+
+ </div>
+
+</div>
+
+
+<!-- АДМИН -->
+
+<div class="modal" id="login">
+ <div class="box">
+
+  <h2>ADMIN</h2>
+
+  <input id="password" type="password"
+   placeholder="Пароль">
+
+  <button onclick="login()">
+   ВОЙТИ
+  </button>
+
+ </div>
+</div>
+
+
+<div class="admin" id="admin">
+
+ <div class="adminBox">
+
+  <h2>MARCA <span>ADMIN.</span></h2>
+
+  <input id="pname" placeholder="Название товара">
+
+  <input id="pprice" type="number"
+   placeholder="Цена">
+
+  <input id="pcat"
+   placeholder="Категория">
+
+  <input id="pimage" type="file"
+   accept="image/*">
+
+  <button onclick="addProduct()">
+   ДОБАВИТЬ ТОВАР
+  </button>
+
+  <hr>
+
+  <h3>Товары</h3>
+
+  <div id="adminProducts"></div>
+
+  <br>
+
+  <button onclick="document.getElementById('admin').classList.remove('show')">
+   ЗАКРЫТЬ
+  </button>
+
+ </div>
+
+</div>
+
+
+<script>
+
+/* ==============================
+   НАСТРОЙКИ
+============================== */
+
+const MANAGER="markulik52";
+const ADMIN_PASSWORD="MARCA2026";
+
+
+/* ==============================
+   ТОВАРЫ
+============================== */
+
+let products=JSON.parse(
+ localStorage.getItem("products")
+)||[
+ {
+  id:1,
+  name:"MARCA BASIC TEE",
+  price:450,
+  category:"Футболки"
+ },
+ {
+  id:2,
+  name:"CORE HOODIE",
+  price:950,
+  category:"Худи"
+ },
+ {
+  id:3,
+  name:"MARCA WIDE PANTS",
+  price:850,
+  category:"Штаны"
+ },
+ {
+  id:4,
+  name:"STREET JACKET",
+  price:1400,
+  category:"Куртки"
+ }
+];
+
+let cart=[];
+let total=0;
+
+
+/* ==============================
+   СОХРАНЕНИЕ
+============================== */
+
+function save(){
+ localStorage.setItem(
+  "products",
+  JSON.stringify(products)
+ );
+}
+
+
+/* ==============================
+   ТОВАРЫ
+============================== */
+
+function render(){
+
+ let box=document.getElementById("products");
+
+ box.innerHTML="";
+
+ products.forEach(p=>{
+
+  let div=document.createElement("div");
+
+  div.className="product";
+
+  div.innerHTML=`
+
+   <div class="photo">
+    ${
+     p.image
+     ? `<img src="${p.image}">`
+     : `<div class="fake"></div>`
+    }
+   </div>
+
+   <div class="info">
+
+    <b>${p.name}</b><br>
+    <small>${p.category}</small>
+
+    <div class="row">
+
+     <strong>${p.price} лей</strong>
+
+     <button class="add"
+      onclick="add(${p.id})">
+      + В КОРЗИНУ
+     </button>
+
+    </div>
+
+   </div>
+  `;
+
+  box.appendChild(div);
+
+ });
+
+ renderCats();
+
+}
+
+
+/* ==============================
+   КАТЕГОРИИ
+============================== */
+
+function renderCats(){
+
+ let box=document.getElementById("categories");
+
+ let cats=["Все",...new Set(
+  products.map(p=>p.category)
+ )];
+
+ box.innerHTML="";
+
+ cats.forEach(c=>{
+
+  let b=document.createElement("button");
+
+  b.className="cat";
+  b.textContent=c;
+
+  if(c==="Все")b.classList.add("active");
+
+  b.onclick=()=>{
+
+   document.querySelectorAll(".cat")
+    .forEach(x=>x.classList.remove("active"));
+
+   b.classList.add("active");
+
+   document.querySelectorAll(".product")
+    .forEach((p,i)=>{
+
+     p.style.display=
+      c==="Все"||
+      products[i].category===c
+      ?"block":"none";
+
+    });
+
+  };
+
+  box.appendChild(b);
+
+ });
+
+}
+
+
+/* ==============================
+   КОРЗИНА
+============================== */
+
+function add(id){
+
+ let p=products.find(x=>x.id===id);
+
+ cart.push(p);
+
+ total+=Number(p.price);
+
+ updateCart();
+
+ openCart();
+
+}
+
+function updateCart(){
+
+ document.getElementById("count")
+  .textContent=cart.length;
+
+ document.getElementById("total")
+  .textContent=total;
+
+ let box=document.getElementById("cartItems");
+
+ if(!cart.length){
+  box.innerHTML="Пусто";
+  return;
+ }
+
+ box.innerHTML="";
+
+ cart.forEach((p,i)=>{
+
+  let d=document.createElement("div");
+
+  d.className="cartItem";
+
+  d.innerHTML=`
+   <span>${p.name}</span>
+   <b>${p.price} лей</b>
+   <button onclick="removeItem(${i})">✕</button>
+  `;
+
+  box.appendChild(d);
+
+ });
+
+}
+
+function removeItem(i){
+
+ total-=Number(cart[i].price);
+
+ cart.splice(i,1);
+
+ updateCart();
+
+}
+
+function openCart(){
+ document.getElementById("cart")
+  .classList.add("open");
+}
+
+function closeCart(){
+ document.getElementById("cart")
+  .classList.remove("open");
+}
+
+
+/* ==============================
+   ОФОРМЛЕНИЕ
+============================== */
+
+function openOrder(){
+
+ if(!cart.length){
+  alert("Корзина пустая");
+  return;
+ }
+
+ closeCart();
+
+ document.getElementById("orderProducts")
+ .innerHTML=
+ cart.map(p=>`
+  <p>
+   <b>${p.name}</b>
+   — ${p.price} лей
+  </p>
+ `).join("");
+
+ document.getElementById("orderTotal")
+ .textContent=total;
+
+ document.getElementById("orderModal")
+ .classList.add("show");
+
+}
+
+function closeOrder(){
+
+ document.getElementById("orderModal")
+  .classList.remove("show");
+
+}
+
+
+/* ==============================
+   TELEGRAM
+============================== */
+
+function sendOrder(){
+
+ let color=
+ document.getElementById("color").value;
+
+ let size=
+ document.getElementById("size").value;
+
+ let qty=
+ Number(document.getElementById("qty").value);
+
+ if(!color||!size){
+  alert("Выберите цвет и размер");
+  return;
+ }
+
+ if(qty<1){
+  alert("Укажите количество");
+  return;
+ }
+
+ let list=cart.map((p,i)=>
+  `${i+1}. ${p.name} — ${p.price} лей`
+ ).join("\n");
+
+ let sum=total*qty;
+
+ let message=
+`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE
+
+${list}
+
+🎨 Цвет: ${color}
+📏 Размер: ${size}
+🔢 Количество: ${qty}
+
+💰 СУММА: ${sum} лей`;
+
+ let url=
+ "https://t.me/"+MANAGER+
+ "?text="+encodeURIComponent(message);
+
+ window.location.href=url;
+
+}
+
+
+/* ==============================
+   АДМИН
+============================== */
+
+let clicks=0;
+
+document.getElementById("logo")
+.onclick=()=>{
+
+ clicks++;
+
+ setTimeout(()=>clicks=0,1500);
+
+ if(clicks>=5){
+
+  clicks=0;
+
+  document.getElementById("login")
+   .classList.add("show");
+
+ }
+
+};
+
+function login(){
+
+ let p=document.getElementById("password").value;
+
+ if(p===ADMIN_PASSWORD){
+
+  document.getElementById("login")
+   .classList.remove("show");
+
+  document.getElementById("admin")
+   .classList.add("show");
+
+  renderAdmin();
+
+ }else{
+
+  alert("Неверный пароль");
+
+ }
+
+}
+
+
+/* ==============================
+   ДОБАВЛЕНИЕ ТОВАРА
+============================== */
+
+function addProduct(){
+
+ let name=
+ document.getElementById("pname").value.trim();
+
+ let price=
+ Number(document.getElementById("pprice").value);
+
+ let category=
+ document.getElementById("pcat").value.trim();
+
+ let file=
+ document.getElementById("pimage").files[0];
+
+ if(!name||!price||!category){
+  alert("Заполни все поля");
+  return;
+ }
+
+ if(file){
+
+  let reader=new FileReader();
+
+  reader.onload=e=>{
+
+   products.unshift({
+    id:Date.now(),
+    name:name,
+    price:price,
+    category:category,
+    image:e.target.result
+   });
+
+   save();
+   render();
+   renderAdmin();
+
+  };
+
+  reader.readAsDataURL(file);
+
+ }else{
+
+  products.unshift({
+   id:Date.now(),
+   name:name,
+   price:price,
+   category:category
+  });
+
+  save();
+  render();
+  renderAdmin();
+
+ }
+
+ document.getElementById("pname").value="";
+ document.getElementById("pprice").value="";
+ document.getElementById("pcat").value="";
+ document.getElementById("pimage").value="";
+
+}
+
+
+/* ==============================
+   АДМИН ТОВАРЫ
+============================== */
+
+function renderAdmin(){
+
+ let box=
+ document.getElementById("adminProducts");
+
+ box.innerHTML="";
+
+ products.forEach(p=>{
+
+  let d=document.createElement("div");
+
+  d.className="adminProduct";
+
+  d.innerHTML=`
+   <span>
+    ${p.name}<br>
+    <small>${p.price} лей · ${p.category}</small>
+   </span>
+
+   <button class="del"
+    onclick="delProduct(${p.id})">
+    Удалить
+   </button>
+  `;
+
+  box.appendChild(d);
+
+ });
+
+}
+
+function delProduct(id){
+
+ products=
+ products.filter(p=>p.id!==id);
+
+ save();
+ render();
+ renderAdmin();
+
+}
+
+
+/* ==============================
+   ЗАПУСК
+============================== */
+
+render();
+updateCart();
+
+</script>
+
+</body>
+    </html>
