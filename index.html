@@ -87,6 +87,7 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 .cart-item .ci-info small{color:#777;font-size:11px}
 .cart-item .ci-del{background:#3a1010;color:#f88;border:1px solid #5a1a1a;border-radius:6px;padding:7px 10px;font-size:14px;flex-shrink:0}
 .cart-item .ci-del:hover{background:#4a1515}
+.tg-btn{background:#2a9d5c!important;color:#fff!important}
 @media(max-width:700px){.hero{min-height:520px}.text{width:56%}.text h1{font-size:clamp(40px,10vw,58px);letter-spacing:-3px}.text p{font-size:10px}.btn{font-size:9px;padding:10px}.scene{width:62vw;height:62vw;right:-2%;opacity:.72}.products{grid-template-columns:1fr 1fr}.photo{height:180px}.shop h2{font-size:45px}}
 </style>
 </head>
@@ -155,18 +156,10 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 <h2>КОРЗИНА</h2>
 <div id="items"></div>
 <h3>Итого: <span id="sum">0</span> лей</h3>
-<button class="send" onclick="order()">ОФОРМИТЬ</button>
-<button class="close" onclick="closeCart()">ЗАКРЫТЬ</button>
-</div></div>
-
-<div class="modal" id="orderBox"><div class="box">
-<h2>ТОВАР</h2>
-<div id="orderItems"></div>
 <select id="color"><option value="">Цвет</option><option>Чёрный</option><option>Белый</option><option>Серый</option><option>Бежевый</option><option>Синий</option></select>
 <select id="size"><option value="">Размер</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
-<h3>Сумма: <span id="orderSum">0</span> лей</h3>
-<button class="send" onclick="sendToCart()">В КОРЗИНУ</button>
-<button class="close" onclick="orderBox.style.display='none'">НАЗАД</button>
+<button class="send tg-btn" onclick="sendTelegram()">📲 ОФОРМИТЬ ЗАКАЗ В TELEGRAM</button>
+<button class="close" onclick="closeCart()">ЗАКРЫТЬ</button>
 </div></div>
 
 <script>
@@ -178,8 +171,7 @@ try{const r=localStorage.getItem('marca_products');if(r){const p=JSON.parse(r);i
 const $=id=>document.getElementById(id);
 const price=p=>p[1]==0?"ПОД ЗАКАЗ":p[1]+" лей";
 const save=()=>{try{localStorage.setItem('marca_products',JSON.stringify(products));return true}catch(e){alert("Хранилище переполнено!");return false}};
-
-function cartSum(){return cart.reduce((s,item)=>s+(item[1]>0?item[1]:0),0);}
+const cartSum=()=>cart.reduce((s,item)=>s+(item[1]>0?item[1]:0),0);
 
 function render(){
   $("products").innerHTML=products.length?products.map((p,i)=>{
@@ -196,7 +188,13 @@ function add(i){
 
 function updateCartBadge(){$("num").textContent=cart.length;}
 
-function openCart(){$("cartBox").style.display="flex";renderCart();}
+function openCart(){
+  $("cartBox").style.display="flex";
+  // Сброс селектов при каждом открытии
+  $("color").value="";
+  $("size").value="";
+  renderCart();
+}
 
 function renderCart(){
   const items=$("items");
@@ -216,57 +214,29 @@ function renderCart(){
 function removeFromCart(idx){
   cart.splice(idx,1);
   renderCart();
-  if(!cart.length && $("orderBox").style.display==="flex"){$("orderBox").style.display="none";}
-  if($("orderBox").style.display==="flex"){renderOrderItems();}
 }
 
 function closeCart(){$("cartBox").style.display="none";}
 
-function order(){
+/* ==== ОТПРАВКА В TELEGRAM ==== */
+function sendTelegram(){
   if(!cart.length){alert("Корзина пустая");return;}
-  closeCart();
-  $("orderBox").style.display="flex";
-  renderOrderItems();
-}
 
-function renderOrderItems(){
-  $("orderItems").innerHTML=cart.map(item=>{
-    const p=item[1]==0?"ПОД ЗАКАЗ":item[1]+" лей";
-    return `<p style="margin:8px 0">${item[0]} — ${p}</p>`;
-  }).join("");
-  $("orderSum").textContent=cartSum();
-}
-
-/* НОВАЯ ФУНКЦИЯ: добавляет товар в корзину (из окна ТОВАР) */
-function sendToCart(){
-  if(!cart.length){alert("Корзина пустая");return;}
   const c=$("color").value, s=$("size").value;
   if(!c || !s){alert("Выберите цвет и размер");return;}
 
-  // Сохраняем выбранный цвет и размер для каждого товара
-  cart.forEach(item=>{
-    item.color = c;
-    item.size = s;
-  });
-
-  $("orderBox").style.display="none";
-  alert("Товар добавлен в корзину ✓");
-  openCart();
-}
-
-/* ФУНКЦИЯ: отправить всё в Telegram (вызывается из корзины, если нужно) */
-function sendTelegram(){
-  if(!cart.length){alert("Корзина пустая");return;}
   const list=cart.map(x=>{
-    let line = x[0]+" — "+(x[1]==0?"ПОД ЗАКАЗ":x[1]+" лей");
-    if(x.color) line += ` (${x.color}, ${x.size})`;
+    let line = "• "+x[0]+" — "+(x[1]==0?"ПОД ЗАКАЗ":x[1]+" лей");
     return line;
   }).join("\n");
+
   const total=cartSum();
-  const text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n💰 СУММА: ${total==0?"ПОД ЗАКАЗ":total+" лей"}`;
+  const text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n🎨 Цвет: ${c}\n📏 Размер: ${s}\n\n💰 СУММА: ${total==0?"ПОД ЗАКАЗ":total+" лей"}`;
+
   location.href="https://t.me/"+MGR+"?text="+encodeURIComponent(text);
 }
 
+/* ==== УДЕРЖАНИЕ ЛОГОТИПА ==== */
 const logoEl=$("logo");
 function startHold(){logoEl.classList.add('holding');holdT=setTimeout(()=>{logoEl.classList.remove('holding');if(navigator.vibrate)navigator.vibrate(30);openLogin();},HOLD);}
 function cancelHold(){if(holdT){clearTimeout(holdT);holdT=null;}logoEl.classList.remove('holding');}
@@ -279,6 +249,7 @@ logoEl.addEventListener('touchcancel',cancelHold);
 logoEl.addEventListener('touchmove',cancelHold);
 logoEl.addEventListener('click',e=>e.preventDefault());
 
+/* ==== ВХОД ==== */
 function openLogin(){$("loginBox").style.display="flex";$("adminBox").style.display="none";$("loginError").textContent="";$("passInput").value="";setTimeout(()=>$("passInput").focus(),150);}
 function closeLogin(){$("loginBox").style.display="none";$("passInput").value="";}
 function tryLogin(){
@@ -288,6 +259,7 @@ function tryLogin(){
 }
 $("passInput").addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();tryLogin();}});
 
+/* ==== АДМИНКА ==== */
 function openAdmin(){if(!isAdmin){openLogin();return;}$("loginBox").style.display="none";$("adminBox").style.display="flex";renderAdmin();}
 function closeAdmin(){$("adminBox").style.display="none";isAdmin=false;}
 
