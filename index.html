@@ -9,7 +9,7 @@
 body{background:#070707;color:#fff;font-family:Arial;overflow-x:hidden}
 button{cursor:pointer}
 nav{height:65px;padding:0 6%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #222}
-.logo{font-size:21px;font-weight:bold;user-select:none;-webkit-user-select:none;padding:8px 4px;transition:.2s}
+.logo{font-size:21px;font-weight:bold;user-select:none;padding:8px 4px;transition:.2s}
 .logo.holding{color:#888}
 .cart{background:#fff;border:0;padding:11px 17px;border-radius:8px}
 .hero{height:calc(100vh - 65px);min-height:540px;display:flex;align-items:center;padding:0 6%;position:relative;overflow:hidden}
@@ -36,6 +36,31 @@ nav{height:65px;padding:0 6%;display:flex;align-items:center;justify-content:spa
 .hoodie:before{content:"";position:absolute;left:30%;top:-5%;width:40%;height:25%;border:3px solid #777;border-radius:50%}
 @keyframes rack{0%,100%{transform:rotateY(-5deg) rotateZ(-1deg)}50%{transform:rotateY(5deg) rotateZ(1deg)}}
 @keyframes cloth{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(4deg)}}
+.features{padding:100px 6%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;min-height:600px;background:radial-gradient(circle at 30% 50%,#101010 0%,#070707 70%);position:relative;overflow:hidden}
+.features-text small{color:#666;letter-spacing:2px}
+.features-text h2{font-size:clamp(38px,5vw,65px);margin:15px 0 20px;line-height:.9;letter-spacing:-2px}
+.features-text h2 span{color:#444}
+.features-text p{color:#888;line-height:1.7;max-width:440px;margin-bottom:35px}
+.feature-list{display:flex;flex-direction:column;gap:16px}
+.feat{display:flex;align-items:center;gap:15px;background:#0f0f0f;border:1px solid #1c1c1c;border-radius:12px;padding:14px 18px;transition:.3s}
+.feat:hover{border-color:#333;background:#141414;transform:translateX(6px)}
+.feat-icon{font-size:24px;width:46px;height:46px;display:grid;place-items:center;background:#161616;border-radius:10px;flex-shrink:0}
+.feat b{display:block;font-size:14px;margin-bottom:3px}
+.feat small{color:#666;font-size:12px}
+.cube-wrap{display:grid;place-items:center;perspective:1200px;height:420px;position:relative}
+.cube-wrap:before{content:"";position:absolute;width:80%;height:80%;background:radial-gradient(circle,rgba(255,255,255,.07),transparent 65%);filter:blur(70px);pointer-events:none}
+.cube{width:200px;height:200px;position:relative;transform-style:preserve-3d;animation:spinCube 14s linear infinite;cursor:grab}
+.cube .face{position:absolute;width:200px;height:200px;display:grid;place-items:center;background:#f5f5f5;border:1px solid rgba(255,255,255,.2);box-shadow:inset 0 0 40px rgba(0,0,0,.08),0 0 30px rgba(255,255,255,.08);overflow:hidden}
+.cube .face img{width:70%;height:70%;object-fit:contain}
+.face.front{transform:translateZ(100px)}
+.face.back{transform:rotateY(180deg) translateZ(100px)}
+.face.right{transform:rotateY(90deg) translateZ(100px)}
+.face.left{transform:rotateY(-90deg) translateZ(100px)}
+.face.top{transform:rotateX(90deg) translateZ(100px)}
+.face.bottom{transform:rotateX(-90deg) translateZ(100px)}
+.cube-shadow{position:absolute;bottom:40px;width:180px;height:30px;background:radial-gradient(ellipse,rgba(255,255,255,.15),transparent 70%);filter:blur(15px);animation:shadowPulse 14s linear infinite;pointer-events:none}
+@keyframes spinCube{0%{transform:rotateX(-15deg) rotateY(0deg)}100%{transform:rotateX(-15deg) rotateY(360deg)}}
+@keyframes shadowPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:.3;transform:scale(.85)}}
 .shop{padding:80px 6%}
 .shop h2{font-size:55px;margin:10px 0 30px}.shop h2 span{color:#444}
 .products{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -65,7 +90,7 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 .add-main-btn{width:100%;background:#fff;color:#000;border:0;padding:12px;border-radius:6px;font-weight:bold}
 .admin-list{max-height:400px;overflow-y:auto;margin-bottom:15px}
 .admin-item{background:#161616;border:1px solid #262626;border-radius:8px;margin-bottom:8px;padding:10px;display:flex;gap:10px;align-items:center}
-.admin-item .thumb{width:52px;height:52px;border-radius:6px;flex-shrink:0;background:#0d0d0d center/cover;border:1px solid #2a2a2a;display:grid;place-items:center;font-size:18px;color:#444;overflow:hidden}
+.admin-item .thumb{width:52px;height:52px;border-radius:6px;flex-shrink:0;background:#0d0d0d;border:1px solid #2a2a2a;display:grid;place-items:center;font-size:18px;color:#444;overflow:hidden}
 .admin-item .thumb img{width:100%;height:100%;object-fit:cover}
 .admin-item .fields{flex:1;display:grid;grid-template-columns:2fr 1fr;gap:6px}
 .admin-item .fields input{margin:0;padding:7px;font-size:13px}
@@ -79,25 +104,43 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 .login-box .hint{color:#555;font-size:12px;margin-bottom:16px}
 .login-box input{text-align:center;font-size:16px;letter-spacing:3px;margin-bottom:10px}
 .login-error{color:#f55;font-size:12px;height:16px;margin-bottom:6px}
-.cart-item{display:flex;align-items:center;gap:10px;background:#161616;border:1px solid #262626;border-radius:8px;padding:8px;margin-bottom:7px}
-.cart-item .ci-img{width:44px;height:44px;border-radius:6px;flex-shrink:0;background:#0d0d0d center/cover;border:1px solid #2a2a2a;overflow:hidden;display:grid;place-items:center;font-size:16px;color:#444}
+.cart-item{display:flex;align-items:flex-start;gap:10px;background:#161616;border:1px solid #262626;border-radius:8px;padding:10px;margin-bottom:8px}
+.cart-item .ci-img{width:50px;height:50px;border-radius:6px;flex-shrink:0;background:#0d0d0d;border:1px solid #2a2a2a;overflow:hidden;display:grid;place-items:center;font-size:16px;color:#444}
 .cart-item .ci-img img{width:100%;height:100%;object-fit:cover}
 .cart-item .ci-info{flex:1;min-width:0}
-.cart-item .ci-info b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cart-item .ci-info small{color:#777;font-size:11px}
+.cart-item .ci-info b{display:block;font-size:13px;margin-bottom:4px}
+.cart-item .ci-info small{color:#777;font-size:11px;display:block}
+.cart-item .ci-controls{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:6px}
+.cart-item .ci-controls select{margin:0;padding:6px 8px;font-size:11px;background:#0d0d0d}
 .cart-item .ci-del{background:#3a1010;color:#f88;border:1px solid #5a1a1a;border-radius:6px;padding:7px 10px;font-size:14px;flex-shrink:0}
-.cart-item .ci-del:hover{background:#4a1515}
 .tg-btn{background:#2a9d5c!important;color:#fff!important}
-@media(max-width:700px){.hero{min-height:520px}.text{width:56%}.text h1{font-size:clamp(40px,10vw,58px);letter-spacing:-3px}.text p{font-size:10px}.btn{font-size:9px;padding:10px}.scene{width:62vw;height:62vw;right:-2%;opacity:.72}.products{grid-template-columns:1fr 1fr}.photo{height:180px}.shop h2{font-size:45px}}
+@media(max-width:700px){
+.hero{min-height:520px}.text{width:56%}
+.text h1{font-size:clamp(40px,10vw,58px);letter-spacing:-3px}
+.text p{font-size:10px}.btn{font-size:9px;padding:10px}
+.scene{width:62vw;height:62vw;right:-2%;opacity:.72}
+.products{grid-template-columns:1fr 1fr}.photo{height:180px}
+.shop h2{font-size:45px}
+.features{grid-template-columns:1fr;gap:40px;padding:70px 6%;min-height:auto;text-align:center}
+.features-text p{margin-left:auto;margin-right:auto}
+.cube-wrap{height:280px}
+.cube,.cube .face{width:140px;height:140px}
+.face.front{transform:translateZ(70px)}
+.face.back{transform:rotateY(180deg) translateZ(70px)}
+.face.right{transform:rotateY(90deg) translateZ(70px)}
+.face.left{transform:rotateY(-90deg) translateZ(70px)}
+.face.top{transform:rotateX(90deg) translateZ(70px)}
+.face.bottom{transform:rotateX(-90deg) translateZ(70px)}
+.cube-shadow{bottom:20px;width:120px}
+.feat:hover{transform:none}
+}
 </style>
 </head>
 <body>
-
 <nav>
 <div class="logo" id="logo">marcastorre.</div>
 <button class="cart" onclick="openCart()">🛒 <span id="num">0</span></button>
 </nav>
-
 <section class="hero">
 <div class="text">
 <small>MARCA.STORRE / 2026</small>
@@ -116,13 +159,34 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 </div>
 </div>
 </section>
-
+<section class="features">
+<div class="cube-wrap">
+<div class="cube" id="cube3d">
+<div class="face front"><img src="IMG_20260915_155432_237.jpg" alt="MS"></div>
+<div class="face back"><img src="IMG_20260915_155432_237.jpg" alt="MS"></div>
+<div class="face right"><img src="IMG_20260915_155432_237.jpg" alt="MS"></div>
+<div class="face left"><img src="IMG_20260915_155432_237.jpg" alt="MS"></div>
+<div class="face top"><img src="IMG_20260915_155432_237.jpg" alt="MS"></div>
+<div class="face bottom"><img src="IMG_20260915_155432_237.jpg" alt="MS"></div>
+</div>
+<div class="cube-shadow"></div>
+</div>
+<div class="features-text">
+<small>MARCA.STORRE</small>
+<h2>WEAR <span>YOUR</span> MARK.</h2>
+<p>Минимализм, качество и характер — три вещи, которые мы не готовы менять.</p>
+<div class="feature-list">
+<div class="feat"><div class="feat-icon">🚚</div><div><b>Быстрая доставка</b><small>По всей Молдове за 1–3 дня</small></div></div>
+<div class="feat"><div class="feat-icon">💎</div><div><b>Премиум качество</b><small>Плотный хлопок, ровные швы</small></div></div>
+<div class="feat"><div class="feat-icon">🔥</div><div><b>Лимитированные дропы</b><small>Каждая коллекция — ограничена</small></div></div>
+</div>
+</div>
+</section>
 <section class="shop" id="shop">
 <small style="color:#666">COLLECTION</small>
 <h2>THE <span>DROP.</span></h2>
 <div class="products" id="products"></div>
 </section>
-
 <div class="modal" id="loginBox"><div class="box login-box">
 <h2>🔐 ВХОД</h2>
 <div class="hint">Введите пароль</div>
@@ -131,7 +195,6 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 <button class="send" onclick="tryLogin()">ВОЙТИ</button>
 <button class="close" onclick="closeLogin()">ОТМЕНА</button>
 </div></div>
-
 <div class="modal" id="adminBox"><div class="box admin-box">
 <h2>УПРАВЛЕНИЕ КАТАЛОГОМ</h2>
 <div class="admin-add">
@@ -151,92 +214,62 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 <div class="admin-list" id="adminList"></div>
 <button class="close" onclick="closeAdmin()">ЗАКРЫТЬ</button>
 </div></div>
-
-<div class="drawer" id="cartBox"><div class="box">
+<div class="drawer" id="cartBox"><div class="box" style="width:460px">
 <h2>КОРЗИНА</h2>
 <div id="items"></div>
-<h3>Итого: <span id="sum">0</span> лей</h3>
-<select id="color"><option value="">Цвет</option><option>Чёрный</option><option>Белый</option><option>Серый</option><option>Бежевый</option><option>Синий</option></select>
-<select id="size"><option value="">Размер</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+<h3 style="margin-top:10px">Итого: <span id="sum">0</span> лей</h3>
 <button class="send tg-btn" onclick="sendTelegram()">📲 ОФОРМИТЬ ЗАКАЗ В TELEGRAM</button>
 <button class="close" onclick="closeCart()">ЗАКРЫТЬ</button>
 </div></div>
-
 <script>
 const PASS="marca2026",HOLD=1000,MGR="markulik52";
 const DEF=[["MARCA BASIC TEE",450,""],["CORE HOODIE",950,""],["LIMITED TEE",0,""],["STREET JACKET",1400,""]];
+const COLORS=["Чёрный","Белый","Серый","Бежевый","Синий","Красный","Зелёный"];
+const SIZES=["XS","S","M","L","XL","XXL"];
 let products=DEF.slice(),cart=[],isAdmin=false,newImg="",holdT=null;
 try{const r=localStorage.getItem('marca_products');if(r){const p=JSON.parse(r);if(Array.isArray(p)){const f=p.filter(x=>Array.isArray(x)&&x.length>=2).map(x=>[String(x[0]||""),Number(x[1])||0,String(x[2]||"")]);if(f.length)products=f;}}}catch(e){localStorage.removeItem('marca_products');}
-
 const $=id=>document.getElementById(id);
 const price=p=>p[1]==0?"ПОД ЗАКАЗ":p[1]+" лей";
 const save=()=>{try{localStorage.setItem('marca_products',JSON.stringify(products));return true}catch(e){alert("Хранилище переполнено!");return false}};
 const cartSum=()=>cart.reduce((s,item)=>s+(item[1]>0?item[1]:0),0);
-
 function render(){
   $("products").innerHTML=products.length?products.map((p,i)=>{
     const ph=p[2]?`<img src="${p[2]}">`:`<div class="fake"></div>`;
     return `<div class="product"><div class="photo">${ph}</div><div class="info"><b>${p[0]}</b><br><small>MARCA.STORRE</small><div class="row"><b>${price(p)}</b><button class="add" onclick="add(${i})">В КОРЗИНУ</button></div></div></div>`;
   }).join(""):'<div class="empty" style="grid-column:1/-1">Пусто</div>';
 }
-
-function add(i){
-  cart.push({...products[i], _id: Date.now() + Math.random()});
-  updateCartBadge();
-  openCart();
-}
-
+function add(i){cart.push({name:products[i][0],price:products[i][1],img:products[i][2],color:"",size:""});updateCartBadge();openCart();}
 function updateCartBadge(){$("num").textContent=cart.length;}
-
-function openCart(){
-  $("cartBox").style.display="flex";
-  // Сброс селектов при каждом открытии
-  $("color").value="";
-  $("size").value="";
-  renderCart();
-}
-
+function openCart(){$("cartBox").style.display="flex";renderCart();}
 function renderCart(){
   const items=$("items");
-  if(!cart.length){
-    items.innerHTML='<div class="empty">Корзина пустая</div>';
-  } else {
+  if(!cart.length){items.innerHTML='<div class="empty">Корзина пустая</div>';}
+  else{
     items.innerHTML=cart.map((item,idx)=>{
-      const img=item[2]?`<img src="${item[2]}">`:'🖼';
-      const p=item[1]==0?"ПОД ЗАКАЗ":item[1]+" лей";
-      return `<div class="cart-item"><div class="ci-img">${img}</div><div class="ci-info"><b>${item[0]}</b><small>${p}</small></div><button class="ci-del" onclick="removeFromCart(${idx})" title="Убрать">✕</button></div>`;
+      const img=item.img?`<img src="${item.img}">`:'🖼';
+      const p=item.price==0?"ПОД ЗАКАЗ":item.price+" лей";
+      const colorOpts='<option value="">Цвет</option>'+COLORS.map(c=>`<option ${item.color===c?'selected':''}>${c}</option>`).join("");
+      const sizeOpts='<option value="">Размер</option>'+SIZES.map(s=>`<option ${item.size===s?'selected':''}>${s}</option>`).join("");
+      return `<div class="cart-item"><div class="ci-img">${img}</div><div class="ci-info"><b>${item.name}</b><small>${p}</small><div class="ci-controls"><select onchange="setColor(${idx},this.value)">${colorOpts}</select><select onchange="setSize(${idx},this.value)">${sizeOpts}</select></div></div><button class="ci-del" onclick="removeFromCart(${idx})">✕</button></div>`;
     }).join("");
   }
   $("sum").textContent=cartSum();
   updateCartBadge();
 }
-
-function removeFromCart(idx){
-  cart.splice(idx,1);
-  renderCart();
-}
-
+function setColor(idx,val){cart[idx].color=val;}
+function setSize(idx,val){cart[idx].size=val;}
+function removeFromCart(idx){cart.splice(idx,1);renderCart();}
 function closeCart(){$("cartBox").style.display="none";}
-
-/* ==== ОТПРАВКА В TELEGRAM ==== */
 function sendTelegram(){
   if(!cart.length){alert("Корзина пустая");return;}
-
-  const c=$("color").value, s=$("size").value;
-  if(!c || !s){alert("Выберите цвет и размер");return;}
-
-  const list=cart.map(x=>{
-    let line = "• "+x[0]+" — "+(x[1]==0?"ПОД ЗАКАЗ":x[1]+" лей");
-    return line;
-  }).join("\n");
-
+  const missing=cart.findIndex(x=>!x.color||!x.size);
+  if(missing!==-1){alert(`Укажите цвет и размер для товара:\n"${cart[missing].name}"`);return;}
+  let num=0;
+  const list=cart.map(x=>{num++;const p=x.price==0?"ПОД ЗАКАЗ":x.price+" лей";return `${num}. ${x.name}\n   🎨 Цвет: ${x.color}\n   📏 Размер: ${x.size}\n   💵 Цена: ${p}`;}).join("\n\n");
   const total=cartSum();
-  const text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n🎨 Цвет: ${c}\n📏 Размер: ${s}\n\n💰 СУММА: ${total==0?"ПОД ЗАКАЗ":total+" лей"}`;
-
+  const text=`🛍 НОВЫЙ ЗАКАЗ — MARCA.STORRE\n━━━━━━━━━━━━━━━━━━━━\n\n${list}\n\n━━━━━━━━━━━━━━━━━━━━\n💰 ПОЛНАЯ СТОИМОСТЬ: ${total==0?"ПОД ЗАКАЗ":total+" лей"}\n📦 Товаров в заказе: ${cart.length}\n\nСпасибо за заказ! 🖤`;
   location.href="https://t.me/"+MGR+"?text="+encodeURIComponent(text);
 }
-
-/* ==== УДЕРЖАНИЕ ЛОГОТИПА ==== */
 const logoEl=$("logo");
 function startHold(){logoEl.classList.add('holding');holdT=setTimeout(()=>{logoEl.classList.remove('holding');if(navigator.vibrate)navigator.vibrate(30);openLogin();},HOLD);}
 function cancelHold(){if(holdT){clearTimeout(holdT);holdT=null;}logoEl.classList.remove('holding');}
@@ -248,8 +281,6 @@ logoEl.addEventListener('touchend',cancelHold);
 logoEl.addEventListener('touchcancel',cancelHold);
 logoEl.addEventListener('touchmove',cancelHold);
 logoEl.addEventListener('click',e=>e.preventDefault());
-
-/* ==== ВХОД ==== */
 function openLogin(){$("loginBox").style.display="flex";$("adminBox").style.display="none";$("loginError").textContent="";$("passInput").value="";setTimeout(()=>$("passInput").focus(),150);}
 function closeLogin(){$("loginBox").style.display="none";$("passInput").value="";}
 function tryLogin(){
@@ -258,11 +289,8 @@ function tryLogin(){
   else{$("loginError").textContent="Неверный пароль";$("passInput").value="";$("passInput").focus();}
 }
 $("passInput").addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();tryLogin();}});
-
-/* ==== АДМИНКА ==== */
 function openAdmin(){if(!isAdmin){openLogin();return;}$("loginBox").style.display="none";$("adminBox").style.display="flex";renderAdmin();}
 function closeAdmin(){$("adminBox").style.display="none";isAdmin=false;}
-
 function renderAdmin(){
   const b=$("adminList");
   b.innerHTML=products.length?products.map((p,i)=>{
@@ -270,7 +298,6 @@ function renderAdmin(){
     return `<div class="admin-item"><div class="thumb">${t}</div><div class="fields"><input value="${String(p[0]).replace(/"/g,'&quot;')}" onchange="editName(${i},this.value)"><input type="number" min="0" value="${p[1]}" onchange="editPrice(${i},this.value)"></div><div class="actions"><button class="btn-img" onclick="changeImage(${i})">🖼</button><button class="btn-del" onclick="removeProduct(${i})">✕</button></div></div>`;
   }).join(""):'<div class="empty">Пусто</div>';
 }
-
 function compressImage(file,max=700,q=.82){
   return new Promise((res,rej)=>{
     const r=new FileReader();
@@ -278,26 +305,22 @@ function compressImage(file,max=700,q=.82){
     r.onerror=rej;r.readAsDataURL(file);
   });
 }
-
 $("newImgFile").addEventListener('change',async e=>{
   const f=e.target.files[0];if(!f)return;
   try{newImg=await compressImage(f);$("newImgPreview").innerHTML=`<img src="${newImg}">`;$("newImgUrl").value="";}
   catch{alert("Ошибка картинки");}
 });
-
 $("newImgUrl").addEventListener('input',e=>{
   const u=e.target.value.trim();
   if(u){newImg="";$("newImgPreview").innerHTML=`<img src="${u}">`;}
   else $("newImgPreview").innerHTML='🖼';
 });
-
 function changeImage(i){
   if(!isAdmin)return;
   const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
   inp.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{products[i][2]=await compressImage(f);if(save()){render();renderAdmin();}}catch{alert("Ошибка");}};
   inp.click();
 }
-
 function addProduct(){
   if(!isAdmin)return;
   const n=$("newName").value.trim(),pv=$("newPrice").value.trim(),u=$("newImgUrl").value.trim();
@@ -309,11 +332,24 @@ function addProduct(){
   render();renderAdmin();
   $("newName").value="";$("newPrice").value="";$("newImgUrl").value="";$("newImgFile").value="";$("newImgPreview").innerHTML='🖼';newImg="";
 }
-
 function editName(i,v){if(!isAdmin)return;v=v.trim();if(!v){renderAdmin();return;}products[i][0]=v;save();render();}
 function editPrice(i,v){if(!isAdmin)return;const n=parseInt(v);if(isNaN(n)||n<0){renderAdmin();return;}products[i][1]=n;save();render();}
 function removeProduct(i){if(!isAdmin)return;if(!confirm(`Удалить "${products[i][0]}"?`))return;products.splice(i,1);save();render();renderAdmin();}
-
+(function(){
+  const cube=document.getElementById('cube3d');
+  if(!cube)return;
+  let drag=false,sx=0,sy=0,rx=-15,ry=0,tId=null;
+  function apply(){cube.style.animation='none';cube.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`;}
+  function start(x,y){drag=true;sx=x;sy=y;}
+  function move(x,y){if(!drag)return;ry+=(x-sx)*0.5;rx-=(y-sy)*0.5;sx=x;sy=y;apply();}
+  function end(){if(!drag)return;drag=false;clearTimeout(tId);tId=setTimeout(()=>{cube.style.animation='spinCube 14s linear infinite';},2000);}
+  cube.addEventListener('mousedown',e=>start(e.clientX,e.clientY));
+  window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
+  window.addEventListener('mouseup',end);
+  cube.addEventListener('touchstart',e=>start(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
+  window.addEventListener('touchmove',e=>move(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
+  window.addEventListener('touchend',end);
+})();
 render();
 </script>
 </body>
