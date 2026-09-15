@@ -13,8 +13,7 @@ nav{height:65px;padding:0 6%;display:flex;align-items:center;justify-content:spa
 .logo.holding{color:#888}
 .cart{background:#fff;border:0;padding:11px 17px;border-radius:8px}
 .hero{height:calc(100vh - 65px);min-height:540px;display:flex;align-items:center;padding:0 6%;position:relative;overflow:hidden}
-.text{width:48%;z-index:5}
-.text small{color:#666}
+.text{width:48%;z-index:5}.text small{color:#666}
 .text h1{font-size:clamp(48px,7vw,100px);line-height:.83;letter-spacing:-4px;margin:22px 0}
 .text h1 span{color:#444}
 .text p{color:#777;max-width:400px;line-height:1.6}
@@ -81,13 +80,7 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 .login-box .hint{color:#555;font-size:12px;margin-bottom:16px}
 .login-box input{text-align:center;font-size:16px;letter-spacing:3px;margin-bottom:10px}
 .login-error{color:#f55;font-size:12px;height:16px;margin-bottom:6px}
-@media(max-width:700px){
-.hero{min-height:520px}.text{width:56%}
-.text h1{font-size:clamp(40px,10vw,58px);letter-spacing:-3px}
-.text p{font-size:10px}.btn{font-size:9px;padding:10px}
-.scene{width:62vw;height:62vw;right:-2%;opacity:.72}
-.products{grid-template-columns:1fr 1fr}.photo{height:180px}
-.shop h2{font-size:45px}}
+@media(max-width:700px){.hero{min-height:520px}.text{width:56%}.text h1{font-size:clamp(40px,10vw,58px);letter-spacing:-3px}.text p{font-size:10px}.btn{font-size:9px;padding:10px}.scene{width:62vw;height:62vw;right:-2%;opacity:.72}.products{grid-template-columns:1fr 1fr}.photo{height:180px}.shop h2{font-size:45px}}
 @media(max-width:400px){.text{width:58%}.text h1{font-size:39px}.scene{right:-12%;opacity:.58}}
 </style>
 </head>
@@ -180,154 +173,272 @@ input,select{width:100%;padding:12px;margin:7px 0;background:#191919;color:#fff;
 </div>
 
 <script>
-const ADMIN_PASSWORD="MARCA2026",HOLD_TIME=1000,SESSION_MINUTES=30;
-const manager="markulik52";
+/* ================== НАСТРОЙКИ ================== */
+const ADMIN_PASSWORD = "marca2026";  // ← пароль (регистр не важен)
+const HOLD_TIME = 1000;
+const manager = "markulik52";
 
-let products=JSON.parse(localStorage.getItem('marca_products'))||[
-["MARCA BASIC TEE",450,""],["CORE HOODIE",950,""],["LIMITED TEE",0,""],["STREET JACKET",1400,""]
+/* ================== ДАННЫЕ ================== */
+const DEFAULT_PRODUCTS = [
+  ["MARCA BASIC TEE", 450, ""],
+  ["CORE HOODIE", 950, ""],
+  ["LIMITED TEE", 0, ""],
+  ["STREET JACKET", 1400, ""]
 ];
-products=products.map(p=>[p[0],p[1],p[2]||""]);
-let cart=[],sum=0,isAdmin=false,newImageData="";
 
-const productsBox=document.getElementById("products");
-const price=p=>p[1]==0?"ПОД ЗАКАЗ":p[1]+" лей";
-const saveProducts=()=>localStorage.setItem('marca_products',JSON.stringify(products));
+let products = DEFAULT_PRODUCTS.slice();
+let cart = [], sum = 0, isAdmin = false, newImageData = "";
 
+function loadProducts(){
+  try {
+    const raw = localStorage.getItem('marca_products');
+    if(!raw) return;
+    const parsed = JSON.parse(raw);
+    if(!Array.isArray(parsed)) return;
+    const fixed = parsed
+      .filter(p => Array.isArray(p) && p.length >= 2)
+      .map(p => [String(p[0]||""), Number(p[1])||0, String(p[2]||"")]);
+    if(fixed.length) products = fixed;
+  } catch(e){
+    localStorage.removeItem('marca_products');
+  }
+}
+loadProducts();
+
+const productsBox = document.getElementById("products");
+const price = p => p[1] == 0 ? "ПОД ЗАКАЗ" : p[1] + " лей";
+
+function saveProducts(){
+  try {
+    localStorage.setItem('marca_products', JSON.stringify(products));
+  } catch(e){
+    alert("Хранилище переполнено! Используй ссылки на картинки.");
+    return false;
+  }
+  return true;
+}
+
+/* ================== РЕНДЕР ================== */
 function render(){
-  productsBox.innerHTML="";
-  if(!products.length){productsBox.innerHTML='<div class="empty" style="grid-column:1/-1">Каталог пуст</div>';return;}
-  products.forEach((p,i)=>{
-    const photo=p[2]?`<img src="${p[2]}" alt="${p[0]}">`:`<div class="fake"></div>`;
-    productsBox.innerHTML+=`<div class="product"><div class="photo">${photo}</div><div class="info"><b>${p[0]}</b><br><small>MARCA.STORRE</small><div class="row"><b>${price(p)}</b><button class="add" onclick="add(${i})">В КОРЗИНУ</button></div></div></div>`;
+  productsBox.innerHTML = "";
+  if(!products.length){
+    productsBox.innerHTML = '<div class="empty" style="grid-column:1/-1">Каталог пуст</div>';
+    return;
+  }
+  products.forEach((p, i) => {
+    const photo = p[2] ? `<img src="${p[2]}" alt="${p[0]}">` : `<div class="fake"></div>`;
+    productsBox.innerHTML += `<div class="product"><div class="photo">${photo}</div><div class="info"><b>${p[0]}</b><br><small>MARCA.STORRE</small><div class="row"><b>${price(p)}</b><button class="add" onclick="add(${i})">В КОРЗИНУ</button></div></div></div>`;
   });
 }
 
-function add(i){cart.push(products[i]);if(products[i][1]>0)sum+=products[i][1];document.getElementById("num").textContent=cart.length;openCart();}
-
-/* Удержание логотипа */
-const logoEl=document.getElementById("logo");
-let holdTimer=null;
-function startHold(){logoEl.classList.add('holding');holdTimer=setTimeout(()=>{logoEl.classList.remove('holding');if(navigator.vibrate)navigator.vibrate(30);openLogin();},HOLD_TIME);}
-function cancelHold(){if(holdTimer){clearTimeout(holdTimer);holdTimer=null;}logoEl.classList.remove('holding');}
-logoEl.addEventListener('mousedown',startHold);
-logoEl.addEventListener('mouseup',cancelHold);
-logoEl.addEventListener('mouseleave',cancelHold);
-logoEl.addEventListener('touchstart',startHold,{passive:true});
-logoEl.addEventListener('touchend',cancelHold);
-logoEl.addEventListener('touchcancel',cancelHold);
-logoEl.addEventListener('touchmove',cancelHold);
-logoEl.addEventListener('click',e=>e.preventDefault());
-
-/* Вход */
-function openLogin(){if(isAdmin){openAdmin();return;}document.getElementById("loginBox").style.display="flex";document.getElementById("loginError").textContent="";document.getElementById("passInput").value="";setTimeout(()=>document.getElementById("passInput").focus(),100);}
-function closeLogin(){document.getElementById("loginBox").style.display="none";}
-function tryLogin(){
-  const v=document.getElementById("passInput").value;
-  if(v===ADMIN_PASSWORD){isAdmin=true;localStorage.setItem('marca_admin_until',Date.now()+SESSION_MINUTES*60*1000);closeLogin();openAdmin();}
-  else{document.getElementById("loginError").textContent="Неверный пароль";document.getElementById("passInput").value="";}
+function add(i){
+  cart.push(products[i]);
+  if(products[i][1] > 0) sum += products[i][1];
+  document.getElementById("num").textContent = cart.length;
+  openCart();
 }
-document.getElementById("passInput").addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
-(function(){const u=parseInt(localStorage.getItem('marca_admin_until')||'0');if(u>Date.now())isAdmin=true;})();
 
-/* Админка */
-function openAdmin(){if(!isAdmin){openLogin();return;}document.getElementById("adminBox").style.display="flex";renderAdmin();}
-function closeAdmin(){document.getElementById("adminBox").style.display="none";}
+/* ================== УДЕРЖАНИЕ ЛОГОТИПА ================== */
+const logoEl = document.getElementById("logo");
+let holdTimer = null;
+
+function startHold(){
+  logoEl.classList.add('holding');
+  holdTimer = setTimeout(() => {
+    logoEl.classList.remove('holding');
+    if(navigator.vibrate) navigator.vibrate(30);
+    openLogin();
+  }, HOLD_TIME);
+}
+function cancelHold(){
+  if(holdTimer){ clearTimeout(holdTimer); holdTimer = null; }
+  logoEl.classList.remove('holding');
+}
+logoEl.addEventListener('mousedown', startHold);
+logoEl.addEventListener('mouseup', cancelHold);
+logoEl.addEventListener('mouseleave', cancelHold);
+logoEl.addEventListener('touchstart', startHold, {passive:true});
+logoEl.addEventListener('touchend', cancelHold);
+logoEl.addEventListener('touchcancel', cancelHold);
+logoEl.addEventListener('touchmove', cancelHold);
+logoEl.addEventListener('click', e => e.preventDefault());
+
+/* ================== ВХОД ================== */
+function openLogin(){
+  document.getElementById("loginBox").style.display = "flex";
+  document.getElementById("loginError").textContent = "";
+  document.getElementById("passInput").value = "";
+  setTimeout(() => document.getElementById("passInput").focus(), 100);
+}
+function closeLogin(){
+  document.getElementById("loginBox").style.display = "none";
+  isAdmin = false; // всегда сбрасываем — пароль требуется каждый раз
+}
+
+function tryLogin(){
+  const v = document.getElementById("passInput").value.trim();
+  // Сравнение без учёта регистра
+  if(v.toLowerCase() === ADMIN_PASSWORD.toLowerCase()){
+    isAdmin = true;
+    closeLogin();
+    openAdmin();
+  } else {
+    document.getElementById("loginError").textContent = "Неверный пароль";
+    document.getElementById("passInput").value = "";
+  }
+}
+document.getElementById("passInput").addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
+
+/* ================== АДМИНКА ================== */
+function openAdmin(){
+  if(!isAdmin){ openLogin(); return; }
+  document.getElementById("adminBox").style.display = "flex";
+  renderAdmin();
+}
+function closeAdmin(){
+  document.getElementById("adminBox").style.display = "none";
+  isAdmin = false; // после закрытия — снова нужен пароль
+}
 
 function renderAdmin(){
-  const box=document.getElementById("adminList");
-  if(!products.length){box.innerHTML='<div class="empty">Товаров пока нет</div>';return;}
-  box.innerHTML=products.map((p,i)=>{
-    const t=p[2]?`<img src="${p[2]}">`:'🖼';
-    return `<div class="admin-item"><div class="thumb">${t}</div><div class="fields"><input value="${p[0].replace(/"/g,'&quot;')}" onchange="editName(${i},this.value)"><input type="number" min="0" value="${p[1]}" onchange="editPrice(${i},this.value)"></div><div class="actions"><button class="btn-img" onclick="changeImage(${i})">🖼 Фото</button><button class="btn-del" onclick="removeProduct(${i})">✕</button></div></div>`;
+  const box = document.getElementById("adminList");
+  if(!products.length){
+    box.innerHTML = '<div class="empty">Товаров пока нет</div>';
+    return;
+  }
+  box.innerHTML = products.map((p, i) => {
+    const t = p[2] ? `<img src="${p[2]}">` : '🖼';
+    const nameEsc = String(p[0]).replace(/"/g, '&quot;');
+    return `<div class="admin-item"><div class="thumb">${t}</div><div class="fields"><input value="${nameEsc}" onchange="editName(${i},this.value)"><input type="number" min="0" value="${p[1]}" onchange="editPrice(${i},this.value)"></div><div class="actions"><button class="btn-img" onclick="changeImage(${i})">🖼 Фото</button><button class="btn-del" onclick="removeProduct(${i})">✕</button></div></div>`;
   }).join("");
 }
 
-/* Сжатие картинок */
-function compressImage(file,maxSize=700,quality=0.82){
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const img=new Image();
-      img.onload=()=>{
-        let{width,height}=img;
-        if(width>height&&width>maxSize){height=Math.round(height*maxSize/width);width=maxSize;}
-        else if(height>maxSize){width=Math.round(width*maxSize/height);height=maxSize;}
-        const c=document.createElement('canvas');c.width=width;c.height=height;
-        c.getContext('2d').drawImage(img,0,0,width,height);
-        resolve(c.toDataURL('image/jpeg',quality));
+/* ================== СЖАТИЕ КАРТИНОК ================== */
+function compressImage(file, maxSize = 700, quality = 0.82){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let {width, height} = img;
+        if(width > height && width > maxSize){ height = Math.round(height * maxSize / width); width = maxSize; }
+        else if(height > maxSize){ width = Math.round(width * maxSize / height); height = maxSize; }
+        const c = document.createElement('canvas');
+        c.width = width; c.height = height;
+        c.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(c.toDataURL('image/jpeg', quality));
       };
-      img.onerror=reject;img.src=e.target.result;
+      img.onerror = reject;
+      img.src = e.target.result;
     };
-    reader.onerror=reject;reader.readAsDataURL(file);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
 }
 
-document.getElementById("newImgFile").addEventListener('change',async e=>{
-  const f=e.target.files[0];if(!f)return;
-  try{newImageData=await compressImage(f);document.getElementById("newImgPreview").innerHTML=`<img src="${newImageData}">`;document.getElementById("newImgUrl").value="";}
-  catch{alert("Не удалось загрузить картинку");}
+document.getElementById("newImgFile").addEventListener('change', async e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  try {
+    newImageData = await compressImage(f);
+    document.getElementById("newImgPreview").innerHTML = `<img src="${newImageData}">`;
+    document.getElementById("newImgUrl").value = "";
+  } catch { alert("Не удалось загрузить картинку"); }
 });
 
-document.getElementById("newImgUrl").addEventListener('input',e=>{
-  const u=e.target.value.trim();
-  if(u){newImageData="";document.getElementById("newImgPreview").innerHTML=`<img src="${u}">`;}
-  else{document.getElementById("newImgPreview").innerHTML='🖼';}
+document.getElementById("newImgUrl").addEventListener('input', e => {
+  const u = e.target.value.trim();
+  if(u){
+    newImageData = "";
+    document.getElementById("newImgPreview").innerHTML = `<img src="${u}">`;
+  } else {
+    document.getElementById("newImgPreview").innerHTML = '🖼';
+  }
 });
 
 function changeImage(i){
-  if(!isAdmin)return;
-  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
-  inp.onchange=async e=>{
-    const f=e.target.files[0];if(!f)return;
-    try{products[i][2]=await compressImage(f);saveProducts();render();renderAdmin();}
-    catch{alert("Ошибка загрузки");}
+  if(!isAdmin) return;
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/*';
+  inp.onchange = async e => {
+    const f = e.target.files[0];
+    if(!f) return;
+    try {
+      products[i][2] = await compressImage(f);
+      if(saveProducts()){ render(); renderAdmin(); }
+      else { products[i][2] = ""; }
+    } catch { alert("Ошибка загрузки"); }
   };
   inp.click();
 }
 
+/* ================== CRUD ================== */
 function addProduct(){
-  if(!isAdmin)return;
-  const name=document.getElementById("newName").value.trim();
-  const pv=document.getElementById("newPrice").value.trim();
-  const url=document.getElementById("newImgUrl").value.trim();
-  if(!name){alert("Введите название");return;}
-  const pn=pv===""?0:parseInt(pv);
-  if(isNaN(pn)||pn<0){alert("Некорректная цена");return;}
-  const img=newImageData||url||"";
-  try{products.push([name,pn,img]);saveProducts();}
-  catch{alert("Хранилище переполнено");products.pop();return;}
-  render();renderAdmin();
-  document.getElementById("newName").value="";
-  document.getElementById("newPrice").value="";
-  document.getElementById("newImgUrl").value="";
-  document.getElementById("newImgFile").value="";
-  document.getElementById("newImgPreview").innerHTML='🖼';
-  newImageData="";
+  if(!isAdmin) return;
+  const name = document.getElementById("newName").value.trim();
+  const pv = document.getElementById("newPrice").value.trim();
+  const url = document.getElementById("newImgUrl").value.trim();
+  if(!name){ alert("Введите название"); return; }
+  const pn = pv === "" ? 0 : parseInt(pv);
+  if(isNaN(pn) || pn < 0){ alert("Некорректная цена"); return; }
+  const img = newImageData || url || "";
+  products.push([name, pn, img]);
+  if(!saveProducts()){ products.pop(); return; }
+  render(); renderAdmin();
+  document.getElementById("newName").value = "";
+  document.getElementById("newPrice").value = "";
+  document.getElementById("newImgUrl").value = "";
+  document.getElementById("newImgFile").value = "";
+  document.getElementById("newImgPreview").innerHTML = '🖼';
+  newImageData = "";
 }
 
-function editName(i,v){if(!isAdmin)return;v=v.trim();if(!v){alert("Пусто");renderAdmin();return;}products[i][0]=v;saveProducts();render();}
-function editPrice(i,v){if(!isAdmin)return;const n=parseInt(v);if(isNaN(n)||n<0){alert("Плохая цена");renderAdmin();return;}products[i][1]=n;saveProducts();render();}
-function removeProduct(i){if(!isAdmin)return;if(!confirm(`Удалить "${products[i][0]}"?`))return;products.splice(i,1);saveProducts();render();renderAdmin();}
+function editName(i, v){
+  if(!isAdmin) return;
+  v = v.trim();
+  if(!v){ alert("Пустое название"); renderAdmin(); return; }
+  products[i][0] = v;
+  saveProducts(); render();
+}
 
-/* Корзина */
+function editPrice(i, v){
+  if(!isAdmin) return;
+  const n = parseInt(v);
+  if(isNaN(n) || n < 0){ alert("Плохая цена"); renderAdmin(); return; }
+  products[i][1] = n;
+  saveProducts(); render();
+}
+
+function removeProduct(i){
+  if(!isAdmin) return;
+  if(!confirm(`Удалить "${products[i][0]}"?`)) return;
+  products.splice(i, 1);
+  saveProducts(); render(); renderAdmin();
+}
+
+/* ================== КОРЗИНА ================== */
 function openCart(){
-  document.getElementById("cartBox").style.display="flex";
-  document.getElementById("sum").textContent=sum;
-  document.getElementById("items").innerHTML=cart.map(x=>`<p style="margin:8px 0">${x[0]} — ${price(x)}</p>`).join("")||"Корзина пустая";
+  document.getElementById("cartBox").style.display = "flex";
+  document.getElementById("sum").textContent = sum;
+  document.getElementById("items").innerHTML = cart.map(x => `<p style="margin:8px 0">${x[0]} — ${price(x)}</p>`).join("") || "Корзина пустая";
 }
-function closeCart(){document.getElementById("cartBox").style.display="none";}
+function closeCart(){ document.getElementById("cartBox").style.display = "none"; }
+
 function order(){
-  if(!cart.length){alert("Корзина пустая");return;}
-  closeCart();document.getElementById("orderBox").style.display="flex";
-  document.getElementById("orderItems").innerHTML=cart.map(x=>`<p style="margin:8px 0">${x[0]} — ${price(x)}</p>`).join("");
-  document.getElementById("orderSum").textContent=sum;
+  if(!cart.length){ alert("Корзина пустая"); return; }
+  closeCart();
+  document.getElementById("orderBox").style.display = "flex";
+  document.getElementById("orderItems").innerHTML = cart.map(x => `<p style="margin:8px 0">${x[0]} — ${price(x)}</p>`).join("");
+  document.getElementById("orderSum").textContent = sum;
 }
+
 function send(){
-  const c=document.getElementById("color").value,s=document.getElementById("size").value;
-  if(!c||!s){alert("Выберите цвет и размер");return;}
-  const list=cart.map(x=>x[0]+" — "+price(x)).join("\n");
-  const text=`🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n🎨 Цвет: ${c}\n📏 Размер: ${s}\n\n💰 СУММА: ${sum==0?"ПОД ЗАКАЗ":sum+" лей"}`;
-  location.href="https://t.me/"+manager+"?text="+encodeURIComponent(text);
+  const c = document.getElementById("color").value, s = document.getElementById("size").value;
+  if(!c || !s){ alert("Выберите цвет и размер"); return; }
+  const list = cart.map(x => x[0] + " — " + price(x)).join("\n");
+  const text = `🛍 НОВЫЙ ЗАКАЗ MARCA.STORRE\n\n${list}\n\n🎨 Цвет: ${c}\n📏 Размер: ${s}\n\n💰 СУММА: ${sum == 0 ? "ПОД ЗАКАЗ" : sum + " лей"}`;
+  location.href = "https://t.me/" + manager + "?text=" + encodeURIComponent(text);
 }
 
 render();
